@@ -1,0 +1,10 @@
+rtcheckcalls
+--------------------
+
+Python daemon to control billing for asterisk in a simple way.
+
+Adapt and run run.sh script to enjoy!
+
+-----
+
+devel@lorea.org
