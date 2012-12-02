@@ -5,6 +5,16 @@ Python daemon to control billing for asterisk in a simple way.
 
 Adapt and run run.sh script to enjoy!
 
+Usage
+-----------------------
+
+Provides the following urls:
+
+localhost:8081/ - main page
+localhost:8081/voip - extensions info and server stats
+localhost:8081/prices - prices
+localhost:8081/user/<ext> - user info including credit
+localhost:8081/user/addcredit/<ext>/<credit> - add credit for a user
 
 Asterisk configuration
 -----------------------
