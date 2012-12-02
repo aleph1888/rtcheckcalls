@@ -1,9 +1,19 @@
 rtcheckcalls
---------------------
+-----------------------
 
 Python daemon to control billing for asterisk in a simple way.
 
 Adapt and run run.sh script to enjoy!
+
+
+Asterisk configuration
+-----------------------
+
+You need to enable cdr-custom and cel-custom logging in your asterisk (1.8).
+
+-----
+
+https://github.com/lorea/rtcheckcalls
 
 -----
 
