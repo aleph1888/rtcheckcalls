@@ -41,7 +41,7 @@ class AccountResource(Resource):
 			user = parts[2]
 			if user == 'addcredit':
 				self.add_credit(parts[3:])
-				return redirectTo("user/" + parts[3], request)
+				return redirectTo("/user/" + parts[3], request)
 			else:
 				res = self.render_user(user)
         return "<html><body>%s</body></html>" % (res,)
