@@ -3,7 +3,18 @@ rtcheckcalls
 
 Python daemon to control billing for asterisk in a simple way.
 
-Adapt and run run.sh script to enjoy!
+Running
+1. First create config.json file with the following contents:
+
+{"user": "db_user", "password": "your_password", "database": "db_name", "secret": "user_secret", "logo": "your_site_name"}
+
+User, password and database (and optionally host) are credentials for your mysql database. The database and user must already exist, but
+the script will create the tables by itself on connection.
+
+2. Adapt paths on root_resource.py
+
+3. Then adapt and run run.sh script to enjoy!
+
 
 Usage
 -----------------------
@@ -15,6 +26,11 @@ localhost:8081/voip - extensions info and server stats
 localhost:8081/prices - prices
 localhost:8081/user/<ext> - user info including credit
 localhost:8081/user/addcredit/<ext>/<credit> - add credit for a user
+
+and new ones.
+
+you just need the main page anyways.
+
 
 Asterisk configuration
 -----------------------
