@@ -1,0 +1,9 @@
+- create users from web
+- change password for users
+- automatically track and adapt rates
+- provider management to maximize usage of free minutes or other bonuses
+- charge credit (bitcoin, paypal...) and transfer credit to other users
+
+- cool stats page with views for hour activity, day, week, rate variations...
+- js pagination on user listings
+
