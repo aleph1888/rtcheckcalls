@@ -1,0 +1,62 @@
+
+body{
+	font-family: Verdana;
+	font-size: 1em;
+	background-color: #222;
+	color: #ccc;
+}
+
+
+#main-wrapper {
+	margin: 10px;
+}
+
+#header {
+	height: 80px;
+	color: #ddd;
+	text-shadow: 0px 0px 7px #1FF;
+	margin-bottom: 10px;
+
+}
+
+#logo {
+	font-size: 3em;
+	font-weight: bold;
+	color: white;
+	float: right;
+	height: 80px;
+} 
+
+#content{
+	font-size: 0.8em;
+}
+
+#img-logo {
+	float: right;
+}
+#login {
+
+}
+
+a{
+	color: #FFFFFF;
+}
+
+#login a{
+	color: #FA005C;
+
+}
+
+#tdfront-login {
+	background-color: #444;
+}
+
+
+#listado-enlaces {
+	width: 317px;
+	background-color: #444;
+
+}
+#footer {
+
+}

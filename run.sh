@@ -1,4 +1,4 @@
 #! /bin/bash
-cd /root/rtcheckcalls/
-export PYTHONPATH=/root/rtcheckcalls/
+cd /home/caedes/rtcheckcalls/
+export PYTHONPATH=/home/caedes/rtcheckcalls/
 twistd -ny main.tac

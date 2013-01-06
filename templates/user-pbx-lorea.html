@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>%%logo%% - %%username%%</title>
+		<meta charset="UTF-8">
+		<style type="text/css"></style>
+		<link rel="stylesheet" href="/tpl/user-pbx-lorea.css">
+	</head>
+
+	<body>
+		<div id="main-wrapper">
+			<header id="header">
+						<a href="/">inicio</a>
+				<div id="logo">%%logo%%</div>				
+				<dl id="user">
+						<dt class="title-user"><h2>Usuario</h2></dt>
+							<dd class="username">%%username%%</dd>
+						<dt class="user-credit-title">Crédito</dt>
+							<dd class="user-credit">%%credit%%</dd>
+						<dt class="user-number-title">Numero PLN</dt>
+							<dd class="user-number">0000 10 %%ext%%</dd>
+				</dl>
+			</header>
+			
+			<div id="content">
+
+				<section id="facturacion">
+					<h2>Facturacion</h2>
+						<table>
+							<thead>
+								<tr>
+									<td>Fecha</td>
+									<td>Destino</td>
+									<td>Duración</td>
+									<td>coste de la llamada</td>
+									<td>Precio por minuto</td>
+								</tr>
+							</thead>
+							<tbody>
+								%%calls%%
+							</tbody>
+						</table>
+					</section>
+
+
+				<section id="recargas">
+					<h2>Recargas</h2>
+						<table>
+							<thead>
+								<tr>
+									<td>Fecha de la recarga</td>
+									<td>Monto</td>
+									<td>Quien realizó la recarga</td>
+								</tr>
+							</thead>
+							<tbody>
+								%%charges%%
+							</tbody>
+						</table>	
+				</section>
+				<section id="calls">
+					<h2>Llamadas</h2>
+						<table>
+							<thead>
+								<tr>
+									<td>Fecha</td>
+									<td>Numero de origen</td>
+									<td>Destino</td>
+									<td>Duración</td>
+									<td>fecha de llamada</td>
+									<td>Resultado</td>
+								</tr>
+							</thead>
+							<tbody>
+								%%all_calls%%
+							</tbody>
+						</table>				
+				</section>
+
+			</div>
+      <!------ fin del content ---- -->
+			<footer id="footer"><a href="/logout">logout</a></footer>
+		</div>
+	</body>
+
+</html>
+

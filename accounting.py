@@ -1,41 +1,58 @@
 from twisted.internet import reactor
-import json
 import os
+from decimal import Decimal
+
+import charges
+
+from model import Model, User
 
 class Accounting(object):
 	def __init__(self):
-		self.load_data()
+		self.model = Model()
 
-	def load_data(self):
-		if os.path.exists("accounts.json"):
-			f = open("accounts.json", "r")
-			data = f.read()
-			f.close()
-			self._data = json.loads(data)
+	def get_data(self):
+		data = {}
+		users = self.model.query(User)
+		for user in users:
+			data[user.voip_id] = user.credit
+		return data
+
+	def get_mana(self, user_ext):
+		user = self.model.get_user_fromext(user_ext)
+		if user:
+			return user.credit
 		else:
-			self._data = {}
-			self.save_data()
-		self.save_data()
+			return Decimal()
 
-	def save_data(self):
-		f = open("accounts.json", "w")
-		f.write(json.dumps(self._data))
-		f.close()
-		f2 = open("accounts2.json", "w")
-		f2.write(json.dumps(self._data))
-		f2.close()
+	def reset_credit(self, user_ext):
+		user = self.model.get_user_fromext(user_ext)
+		user.credit = Decimal()
+		self.model.session.commit()
+		
+	def add_credit(self, user_ext, credit):
+		user = self.model.get_user_fromext(user_ext)
+		if not user:
+			user = User(user_ext)
+			self.model.session.add(user)
+		user.credit += Decimal(credit)
+		self.model.session.commit()
+		charges.add_charge(user_ext, credit)
 
-	def get_mana(self, user):
-		if user in self._data:
-			return self._data[user]
-		else:
-			return 0.0
+	def remove_credit(self, user_ext, credit):
+		user = self.model.get_user_fromext(user_ext)
+		if not user:
+			return
 
-	def add_credit(self, user, credit):
-		if user in self._data:
-			self._data[user] += credit
-		else:
-			self._data[user] = credit
-		self.save_data()
+		user.credit -= Decimal(credit)
+		self.model.session.commit()
 
 accounting = Accounting()
+
+if __name__ == '__main__':
+	print accounting.get_data()
+	print accounting.get_mana('816')
+	accounting.reset_credit('816')
+	accounting.add_credit('816', 1.949000)
+	print accounting.get_mana('816')
+	accounting.remove_credit('816', 1.0)
+	print accounting.get_mana('816')

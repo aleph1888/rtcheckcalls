@@ -1,5 +1,6 @@
 from twisted.web.resource import Resource
 import subprocess
+from templates import print_template
 
 class VoipResource(Resource):
     def add_ip_href(self, line):
@@ -30,8 +31,9 @@ class VoipResource(Resource):
 	res_channels = ""
 	res_end = ""
 	for line in lines[1:]:
-		if "OK" in line and "192.168." in line:
-			line = self.add_ip_href(line)
+		if "OK" in line: # and "192.168." in line:
+			print line
+			#line = self.add_ip_href(line)
 			ext = self.get_extension(line, dialplan)
 			res_local += line+" <b>"+ext+"</b>\n"
 		elif "OK" in line:
@@ -54,7 +56,7 @@ class VoipResource(Resource):
 	res += "</pre><pre>"
 	res += self.run_asterisk_cmd('core show uptime')
 	res += "</pre>"
-        return "<html><body>%s</body></html>" % (res,)
+	return print_template('content-pbx-lorea', {'content': res})
     def run_asterisk_cmd(self, cmd):
 	return self.run_command(['/usr/sbin/asterisk', '-nrx', cmd])
     def run_command(self, cmd):

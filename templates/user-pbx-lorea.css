@@ -1,0 +1,108 @@
+body{
+	font-family: Verdana;
+	font-size: 1em;
+	background-color: #222;
+
+}
+
+
+#main-wrapper {
+	margin: 10px;
+
+
+}
+
+#header {
+	color: #ddd;
+	text-shadow: 0px 0px 7px #1FF;
+
+}
+#header a{
+	color: #faa;
+	text-shadow: 0px 0px 7px #1FF;
+
+}
+#logo {
+	font-size: 3em;
+	font-weight: bold;
+	color: white;
+	float: right;
+} 
+
+#user h2{
+font-size: 0.8em;
+
+}
+
+.title-user{
+
+}
+
+.username { 
+	width: 500px;
+	color: white;
+	text-shadow:0px 0px 7px #FF5C00;
+
+}
+
+.user-number-title {
+	font-weight: bold;
+
+}
+
+.user-number {
+	width: 500px;
+	color: white;
+	text-shadow:0px 0px 7px #FF5C00;
+
+}
+.user-credit {
+	width: 500px;
+	color: white;
+	text-shadow:0px 0px 7px #FF5C00;
+
+}
+#content{
+	font-size: 0.8em;
+	display: inline;
+
+}
+
+#content h2{
+	background-color: #555;
+	color: #E9DBCD;
+	text-shadow: 0px 0px 7px #1FF;
+	border-top-radius: 3px;
+	padding-left: 10px;
+	
+}
+
+#facturacion {
+	background-color: #FFE30D;
+	text-align: left;
+}
+
+
+#calls {
+	background-color: #FF2989;
+}
+
+#recargas {
+	background-color: #7DA4DB;
+}
+
+#facturacion table , #recargas table , #calls table {
+	width: 100%;
+		padding-left: 10px;
+}
+
+#facturacion td , #recargas td , #calls td {
+/*	border: 1px solid #666;*/
+}
+
+#facturacion thead , #recargas thead , #calls thead {
+	font-weight: bold;
+}
+#footer {
+
+}

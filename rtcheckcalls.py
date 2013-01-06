@@ -1,7 +1,10 @@
 import subprocess
 from twisted.internet import reactor
+from decimal import Decimal
+import math
 
 from accounting import accounting
+import calls
 
 filename = "/var/log/asterisk/cel-custom/Master.csv"
 
@@ -9,20 +12,24 @@ class CallMonitor(object):
     def __init__(self, id, cost, app_from, app_to):
 	    self._id = id
 	    self._callID = 0
-	    self._realcost = cost
+            if cost:
+		    self._realcost = Decimal(cost)
+	    else:
+		    self._realcost = Decimal()
 	    try:
-		    self._cost = float(cost)
+		    self._cost = Decimal(cost)
 		    if self._cost:
-			    self._cost += 0.001 # benefit margin
+			    self._cost += Decimal(0.001) # benefit margin
 	    except:
-		    self._cost = 0.0
+		    self._cost = Decimal(0.0)
 	    self._from = app_from
 	    self._to = app_to
     def on_app_start(self, args):
 	    self._starttime = 0
 	    print "call from %s to %s with %s mana remaining" % (self._from, self._to, accounting.get_mana(self._from))
     def on_answer(self, args):
-	    if self._from == args[2] and self._to == args[6]:
+	    print "check %s answered %s on channel %s" % (args[3], args[6], args[8])
+	    if self._from == args[3] and self._to == args[5]:
 		    channel = args[8]
 		    print "%s answered on channel %s" % (self._from, channel)
 		    self._starttime = float(args[0])
@@ -37,7 +44,7 @@ class CallMonitor(object):
 	    if not mana:
 		    self.cut_call(self._channel, "not enough credit for call")
 	    else:
-		    time_to_cut = (mana / self._cost) * 60.0
+		    time_to_cut = (float(mana) / float(self._cost)) * 60.0
 		    print "CUT IN %s" %(time_to_cut)
 		    self._callID = reactor.callLater(int(time_to_cut), self.cut_call, self._channel, "out of credit while calling")
     def cut_call(self, channel, reason=""):
@@ -64,20 +71,26 @@ class CallMonitor(object):
             else:
 		    print "unsuccesfull call"
     def apply_costs(self, totaltime):
-	    if self._from in accounting._data:
+	    if self._from in accounting.get_data():
+		    # round up to closest second
+		    totaltime = math.ceil(totaltime)
 		    # round up to closest minute
+		    roundedtime = totaltime
 		    if totaltime % 60:
-			    totaltime += 60 - (totaltime % 60)
+			    roundedtime += 60 - (totaltime % 60)
+	            minutes = roundedtime / 60
 	            # calculate total cost
-		    totalcost = ((self._cost * totaltime)/60.0)
+		    totalcost = self._cost * Decimal(minutes)
 		    # add call establishment
 		    if self._cost:
-			    totalcost += 0.001
+			    totalcost += Decimal('0.001')
 		    # save accounting data
-		    accounting._data[self._from] = accounting._data[self._from] - totalcost
-		    accounting.save_data()
+		    accounting.remove_credit(self._from, totalcost)
+                    calls.add_call(self._from, self._to, self._starttime, totaltime, roundedtime, totalcost, self._cost)
+
     def run_asterisk_cmd(self, cmd):
 	    return self.run_command(['/usr/sbin/asterisk', '-nrx', cmd])
+
     def run_command(self, cmd):
 	    output = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
 	    return output
@@ -111,11 +124,11 @@ class CallManager(object):
 		    self._calls[app_uniqid].on_chan_start(args)
 	    self.write("chan start: " +  str(args) + " " + str(args[14]))
     def on_app_start(self, args):
-	    app_from = args[2]
-	    app_to = args[6]
+	    app_from = args[3]
+	    app_to = args[5]
 	    app_uniqid = args[14]
 	    app_cost = args[-7]
-	    #print "app start: ", app_from, app_to, args[14]
+	    self.write("app start: " + app_from + " " + app_to + " " + str(args[14]) + " " + str(args))
 	    if not app_uniqid in self._calls:
 		    self._calls[app_uniqid] = CallMonitor(app_uniqid, app_cost, app_from, app_to)
 		    self._calls[app_uniqid].on_app_start(args)
@@ -126,12 +139,12 @@ class CallManager(object):
 	    if app_uniqid in self._calls:
 		    self._calls[app_uniqid].on_hangup(args)
 		    del self._calls[app_uniqid]
-	    #print "hangup: ", args, args[14]
+	    self.write("hangup: " + " " + str(args) + " " + str(args[14]))
     def on_answer(self, args):
 	    app_uniqid = args[14]
 	    if app_uniqid in self._calls:
 		    self._calls[app_uniqid].on_answer(args)
-	    #print "answer: ", args, args[14]
+	    self.write("answer: " + str(args) + " " + args[14])
     def on_bridge_start(self, args):
 	    self.write("bridge start: " +  str(args) + " " + str(args[14]))
     def on_bridge_end(self, args):

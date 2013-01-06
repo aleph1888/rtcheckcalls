@@ -9,6 +9,6 @@ toplevel = RootResource()
 
 # Hooks for twistd
 application = service.Application('Voip Manager')
-server = strports.service('tcp:8081', server.Site(toplevel))
+server = strports.service('tcp:8080', server.Site(toplevel))
 server.setServiceParent(application)
 daemon.run()
