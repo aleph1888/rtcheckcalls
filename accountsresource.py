@@ -54,7 +54,7 @@ class AccountResource(Resource):
 				res = self.render_accounts(request)
 			elif user == 'stats':
 				res = self.render_stats()
-			elif user == 'addcredit' and logged.admin:
+			elif user == 'addcredit' and logged and logged.admin:
 				self.add_credit(parts[3:])
 				return redirectTo("/user/" + parts[3], request)
 			elif logged and (logged.voip_id == user or logged.admin == 1):
