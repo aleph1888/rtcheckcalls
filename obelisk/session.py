@@ -1,4 +1,4 @@
-from model import Model, WebSession
+from obelisk.model import Model, WebSession
 
 def get_user(request):
 	model = Model()

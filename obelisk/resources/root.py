@@ -4,27 +4,37 @@ from twisted.web.wsgi import WSGIResource
 from twisted.internet import reactor
 from twisted.web.util import redirectTo
 
-from voipresource import VoipResource
-from accountsresource import AccountResource
-from pricesresource import PricesResource
-from loginresource import LoginResource
-from logoutresource import LogoutResource
-from templates import print_template
+from obelisk.resources.peers import PeersResource
+from obelisk.resources.user import UserResource
+from obelisk.resources.prices import PricesResource
+from obelisk.resources.login import LoginResource
+from obelisk.resources.stats import StatsResource
+from obelisk.resources.logout import LogoutResource
+from obelisk.resources.providers import ProvidersResource
+from obelisk.templates import print_template
+from obelisk.pricechecker import get_winners
 
-import session
+from obelisk import session
 
 class RootResource(Resource):
     def __init__(self):
         Resource.__init__(self)
-        self.putChild("voip", VoipResource())
+        self.putChild("voip", PeersResource())
         self.putChild("prices", PricesResource())
-        self.putChild("user", AccountResource())
+        self.putChild("user", UserResource())
+        self.putChild("stats", StatsResource())
+        self.putChild("providers", ProvidersResource())
         self.putChild("login", LoginResource())
         self.putChild("logout", LogoutResource())
         self.putChild("icons", File("/usr/share/icons"))
         self.putChild("tpl", File("/home/caedes/rtcheckcalls/templates"))
         self.putChild("sip", File("/home/lluis/tst_sip_gui"))
         self.putChild("jssip", File("/home/caedes/jssip"))
+	reactor.callLater(1, self.get_winners)
+
+    def get_winners(self):
+	get_winners()
+	reactor.callLater(600, self.get_winners)
 
     def getChild(self, name, request):
         return self
@@ -38,9 +48,10 @@ class RootResource(Resource):
 		user_ext = user.voip_id
 		output_user = "<li><a href='/user/"+user.voip_id+"'>datos usuario</a></li>"
 		output_user += "<li><a href='/voip'>extensiones</a></li>"
+		output_user += "<li><a href='/stats'>estadisticas</a></li>"
 		if user.admin == 1:
-			output_user += "<li><a href='/user/stats'>estadisticas</a></li>"
 			output_user += "<li><a href='/user/accounts'>credito total</a></li>"
+			output_user += "<li><a href='/providers'>precios proveedores</a></li>"
 			user_ext += " eres admin"
 		output_user += "<li><a href='/logout'>logout</a></li>"
 

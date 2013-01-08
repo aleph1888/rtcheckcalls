@@ -4,18 +4,18 @@ import subprocess
 from datetime import datetime
 import csv
 
-from accounting import accounting
-from parseusers import parse_users
+from obelisk.accounting import accounting
+from obelisk.parseusers import parse_users
 from decimal import Decimal
-import charges
-import calls
-import session
+from obelisk import charges
+from obelisk import calls
+from obelisk import session
 
-from model import Model
+from obelisk.model import Model
 
-from templates import print_template
+from obelisk.templates import print_template
 
-class AccountResource(Resource):
+class UserResource(Resource):
     def __init__(self):
 	print "INIT ACCOUNT RESOURCE"
 	Resource.__init__(self)
@@ -52,8 +52,6 @@ class AccountResource(Resource):
 			user = parts[2]
 			if user == 'accounts':
 				res = self.render_accounts(request)
-			elif user == 'stats':
-				res = self.render_stats()
 			elif user == 'addcredit' and logged and logged.admin:
 				self.add_credit(parts[3:])
 				return redirectTo("/user/" + parts[3], request)
@@ -70,9 +68,6 @@ class AccountResource(Resource):
 	user = args[0]
 	credit = Decimal(args[1])
 	accounting.add_credit(user, credit)
-
-    def render_stats(self):
-	return calls.get_stats()
 
     def render_accounts(self, request):
 	res = "<h2>accounts</h2>"
@@ -97,10 +92,11 @@ class AccountResource(Resource):
 	else:
 		username = user_ext
 	user = model.get_user_fromext(user_ext)
+	logged = session.get_user(request)
 	if user:
 		credit = "%.3f" % (user.credit,)
 		user_charges = charges.get_charges(user_ext)
-		user_calls = calls.get_calls(user_ext)
+		user_calls = calls.get_calls(user_ext, logged)
 	else:
 		credit = 0.0
 		user_charges = ""

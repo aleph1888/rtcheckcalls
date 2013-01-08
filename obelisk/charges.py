@@ -1,6 +1,7 @@
 import time
-from model import Model, User, Charge
 from datetime import datetime
+
+from obelisk.model import Model, User, Charge
 
 def get_charges(user_ext):
 	model = Model()

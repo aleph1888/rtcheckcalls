@@ -2,9 +2,8 @@ from twisted.internet import reactor
 import os
 from decimal import Decimal
 
-import charges
-
-from model import Model, User
+from obelisk import charges
+from obelisk.model import Model, User
 
 class Accounting(object):
 	def __init__(self):

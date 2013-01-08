@@ -1,6 +1,7 @@
-from tail import tail
 from twisted.internet import reactor
-from rtcheckcalls import CallManager
+
+from obelisk.tail import tail
+from obelisk.rtcheckcalls import CallManager
 
 filename = "/var/log/asterisk/cel-custom/Master.csv"
 

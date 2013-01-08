@@ -7,8 +7,10 @@ from sqlalchemy import Column, Integer, String, Sequence, Numeric, DateTime, Flo
 from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session
 from datetime import datetime
 import time
-from config import config
+
 from decimal import Decimal
+
+from obelisk.config import config
 
 
 class User(Base):
@@ -28,6 +30,9 @@ class User(Base):
 class Provider(Base):
 	__tablename__ = 'providers'
 	id = Column(Integer, Sequence('provider_id_seq'), primary_key=True)
+	name = Column(String(50))
+	def __init__(self, name):
+		self.name = name
 
 class Call(Base):
 	__tablename__ = 'calls'
@@ -72,7 +77,7 @@ user = config['user']
 password = config['password']
 host = config['host']
 database = config['database']
-engine =create_engine('mysql://%s:%s@%s/%s' % (user, password, host, database), echo=False)
+engine =create_engine('mysql://%s:%s@%s/%s' % (user, password, host, database))
 for a in [User, Call, Charge, WebSession]:
 	a.__table__.mysql_engine='InnoDB'
 	a.__table__.mysql_charset='utf8'

@@ -1,13 +1,11 @@
 filename = "/etc/asterisk/prefixes.conf"
 
-
-def list_prices():
+def parse_prices():
 	f = open(filename, "r")
 
-	output = ""
 	prices = {}
-
 	label = ""
+
 	for line in f.readlines():
 		if line.startswith("["):
 			label = line[1:line.find("]")]
@@ -15,20 +13,27 @@ def list_prices():
 		# exten => _0035537[12345678]X.,1,Macro(callto,${albania-fix-provider}/${EXTEN},120,0.046)
 		if "callto" in line:
 			call_type = "unknown"
-			if "-fix-" in line:
-				call_type = "fix"
-			elif "-mob-" in line:
-				call_type = "mob"
+			price = line[line.rfind(",")+1:line.rfind(")")]
 			if not len(line.split(",")) >= 6:
 				continue
-			price = line[line.rfind(",")+1:line.rfind(")")]
 			if not label in prices:
 				prices[label] = {}
-			prices[label][call_type] = price
+			if "-fix-" in line:
+				prices[label]['fix'] = price
+			elif "-mob-" in line:
+				prices[label]['mob'] = price
+			elif "-fixmob-" in line:
+				prices[label]['fix'] = price
+				prices[label]['mob'] = price
+	f.close()
+	return prices
 
-
+def list_prices():
+	prices = parse_prices()
 	labels = prices.keys()
 	labels.sort()
+	output = ""
+
 	for label in labels:
 		output += "<h2>"+label+"</h2>"
 		for call_type in prices[label]:
@@ -38,8 +43,25 @@ def list_prices():
 			else:
 			   price = float(price) + 0.001
 			output += call_type + ": " + str(price) + "<br />"
+	return output
 
-	f.close()
+def list_prices_json():
+	prices = parse_prices()
+	labels = prices.keys()
+	labels.sort()
+	output = "{"
+
+	for label in labels:
+		output += "'"+label+"': {"
+		for call_type in prices[label]:
+			price = prices[label][call_type]
+			if price == "0.0":
+				price = "'gratis'"
+			else:
+			   price = float(price) + 0.001
+			output += "'" + call_type + "': " + str(price) + ","
+		output += "},"
+	output += "}"
 	return output
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from config import config
+from obelisk.config import config
 
 def print_template(name, variables):
 	f = open('templates/'+name+'.html')

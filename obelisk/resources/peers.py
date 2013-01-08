@@ -1,8 +1,8 @@
 from twisted.web.resource import Resource
 import subprocess
-from templates import print_template
+from obelisk.templates import print_template
 
-class VoipResource(Resource):
+class PeersResource(Resource):
     def add_ip_href(self, line):
 	ip_start = line.find("192.168.")
 	ip_end = line.find(" ", ip_start)
@@ -32,7 +32,6 @@ class VoipResource(Resource):
 	res_end = ""
 	for line in lines[1:]:
 		if "OK" in line: # and "192.168." in line:
-			print line
 			#line = self.add_ip_href(line)
 			ext = self.get_extension(line, dialplan)
 			res_local += line+" <b>"+ext+"</b>\n"

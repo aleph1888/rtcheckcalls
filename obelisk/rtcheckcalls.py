@@ -3,8 +3,8 @@ from twisted.internet import reactor
 from decimal import Decimal
 import math
 
-from accounting import accounting
-import calls
+from obelisk.accounting import accounting
+from obelisk import calls
 
 filename = "/var/log/asterisk/cel-custom/Master.csv"
 
@@ -12,6 +12,7 @@ class CallMonitor(object):
     def __init__(self, id, cost, app_from, app_to):
 	    self._id = id
 	    self._callID = 0
+            self._provider = 'unknown'
             if cost:
 		    self._realcost = Decimal(cost)
 	    else:
@@ -26,7 +27,13 @@ class CallMonitor(object):
 	    self._to = app_to
     def on_app_start(self, args):
 	    self._starttime = 0
-	    print "call from %s to %s with %s mana remaining" % (self._from, self._to, accounting.get_mana(self._from))
+            provider = args[10].split("/")
+	    if len(provider) > 2:
+		provider = provider[1]
+	    else:
+		provider = 'direct'
+            self._provider = provider
+	    print "call from %s to %s with %s mana remaining (%s)" % (self._from, self._to, accounting.get_mana(self._from), self._provider)
     def on_answer(self, args):
 	    print "check %s answered %s on channel %s" % (args[3], args[6], args[8])
 	    if self._from == args[3] and self._to == args[5]:
@@ -86,7 +93,7 @@ class CallMonitor(object):
 			    totalcost += Decimal('0.001')
 		    # save accounting data
 		    accounting.remove_credit(self._from, totalcost)
-                    calls.add_call(self._from, self._to, self._starttime, totaltime, roundedtime, totalcost, self._cost)
+                    calls.add_call(self._from, self._to, self._starttime, totaltime, roundedtime, totalcost, self._cost, self._provider)
 
     def run_asterisk_cmd(self, cmd):
 	    return self.run_command(['/usr/sbin/asterisk', '-nrx', cmd])

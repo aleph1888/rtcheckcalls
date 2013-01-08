@@ -3,10 +3,11 @@ from twisted.web.util import redirectTo
 
 from datetime import datetime
 
-from config import config
 import sha
-from parseusers import parse_users
-from model import Model, WebSession
+
+from obelisk.config import config
+from obelisk.parseusers import parse_users
+from obelisk.model import Model, WebSession, User
 
 class LoginResource(Resource):
     def __init__(self):
@@ -31,6 +32,10 @@ class LoginResource(Resource):
 		res += ext
 		model = Model()
 		user = model.get_user_fromext(ext)
+		if not user:
+			user = User(ext)
+			model.session.add(user)
+			model.session.commit()
 		session_id = str(request.getSession().uid)
 		web_session = model.query(WebSession).filter_by(session_id=session_id).first()
 		if not web_session:

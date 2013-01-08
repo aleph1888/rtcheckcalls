@@ -1,7 +1,7 @@
 from twisted.web.resource import Resource
 from twisted.web.util import redirectTo
 
-from model import Model, WebSession
+from obelisk.model import Model, WebSession
 
 class LogoutResource(Resource):
     def render_GET(self, request):

@@ -1,8 +1,8 @@
 from twisted.web import server
 from twisted.internet import reactor
 from twisted.application import service, strports
-from root_resource import RootResource
-import daemon
+from obelisk.resources.root import RootResource
+from obelisk import daemon
 
 # Create the root resource
 toplevel = RootResource()

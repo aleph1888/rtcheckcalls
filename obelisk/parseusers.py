@@ -1,6 +1,6 @@
 
-from config import config
 import sha
+from obelisk.config import config
 
 def parse_users(filename):
 	f = open(filename)
