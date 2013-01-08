@@ -4,6 +4,9 @@
 - provider management to maximize usage of free minutes or other bonuses
 - charge credit (bitcoin, paypal...) and transfer credit to other users
 
+- measure and save call quality (sip show channels and sip show channel stats)
+
 - cool stats page with views for hour activity, day, week, rate variations...
 - js pagination on user listings
+
 
