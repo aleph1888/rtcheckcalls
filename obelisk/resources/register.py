@@ -47,6 +47,7 @@ class RegisterResource(Resource):
     def render_register(self, args={'user':'', 'password':'', 'email':'', 'error': ''}):
 	content = print_template('register', args)
 	return print_template('content-pbx-lorea', {'content': content})
+	#return "no registrations today, sorry"
 
     def render_GET(self, request):
 	res = None

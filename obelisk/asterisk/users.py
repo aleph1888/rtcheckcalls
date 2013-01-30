@@ -5,6 +5,17 @@ import md5
 from obelisk.asterisk.model import SipPeer, Extension, VoiceMail
 from obelisk.model import Model
 
+def reload_asterisk(peer_name):
+	output = subprocess.Popen(['/usr/sbin/asterisk', '-nrx', 'sip prune realtime peer ' + peer_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+	print output
+	output = subprocess.Popen(['/usr/sbin/asterisk', '-nrx', 'sip show peer ' + peer_name + ' load'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+
+def reload_peers():
+	model = Model()
+	peers = model.query(SipPeer)
+	for peer in peers:
+		reload_asterisk(peer.name)
+
 def get_options(user_ext):
 	model = Model()
 	peer = model.query(SipPeer).filter_by(regexten=user_ext).first()
@@ -39,6 +50,9 @@ def change_options(user_ext, options):
 	if newcodecs:
 		peer.disallow = 'all'
 		peer.allow = ','.join(newcodecs)
+	else:
+		peer.disallow = ''
+		peer.allow = ''
 	# tls
 	tls = False
 	if 'tls' in options:
@@ -57,26 +71,28 @@ def change_options(user_ext, options):
 		peer.encryption = 'no'
 	model.session.commit()
 	# reload asterisk
-	output = subprocess.Popen(['/etc/init.d/asterisk', 'reload'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()[0]
+	reload_asterisk(peer.name)
 	return True
 
 
 def change_password(user_ext, password):
 	model = Model()
 	peer = model.query(SipPeer).filter_by(regexten=user_ext).first()
-	pass_string = "%s:asterisk:%s" % (username, password)
+	pass_string = "%s:asterisk:%s" % (peer.name, password)
 	hashed = md5.new(pass_string).hexdigest()
 	peer.md5secret = hashed
 	peer.secret = ''
 	model.session.commit()
 	# reload asterisk
-	output = subprocess.Popen(['/etc/init.d/asterisk', 'reload'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()[0]
+	reload_asterisk(peer.name)
 
 def add_extension(username, extension):
 	model = Model()
 	new_extension = Extension('to-internal', extension, 1, 'Gosub', 'stdexten,%s,1(SIP/%s,default)' % (extension, username))
+	new_extension2 = Extension('to-internal-sip', username, 1, 'Gosub', 'stdexten,%s,1(SIP/%s,default)' % (extension, username))
 	new_voicemail = VoiceMail(context='default', mailbox=extension, password='5555')
 	model.session.add(new_extension)
+	model.session.add(new_extension2)
 	model.session.add(new_voicemail)
 	model.session.commit()
 
@@ -120,7 +136,7 @@ def create_user(username, password):
 			context="from-payuser")
 
 	# reload asterisk
-	output = subprocess.Popen(['/etc/init.d/asterisk', 'reload'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()[0]
+	reload_asterisk(peer.name)
 	print "user created", username, nextexten
 	return peer
 

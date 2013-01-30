@@ -7,6 +7,8 @@ import logging
 global connector
 connector = None
 
+from obelisk.asterisk.users import reload_peers
+
 def connect():
 	global connector
 	connector = AMIConnector()
@@ -57,15 +59,16 @@ class AMIConnector(object):
 		self.ami.registerEvent( 'Newchannel', self.onNewChannel)
 		self.ami.registerEvent( 'Pickup', self.onPickup)
 		self.ami.registerEvent( 'ExtensionStatus', self.onPeerStatus)
-		self.ami.registerEvent( 'Reload', self.onReload)
 		self.ami.registerEvent( 'ChannelReload', self.onReload)
 		"""
+		self.ami.registerEvent( 'Reload', self.onReload)
 		#self.ami.registerEvent( 'FullyBooted', self.onFullyBooted)
 		self.ami.registerEvent( 'CEL', self.runCallbacks)
 		self.ami.registerEvent( 'PeerStatus', self.runCallbacks)
+		reload_peers()
 
 	def onFullyBooted(self, ami, event):
-		self.sendMessage('"admin" <sip:admin@ser.lorea.org>', 'sip:caedes', 'all systems functional')
+		self.sendMessage('"admin" <sip:admin@pbx.lorea.org>', 'sip:caedes', 'all systems functional')
 		#self.sendAction('MailboxStatus', mailbox='6001')
 		#self.sendAction('MailboxCount', mailbox='6001')
 		#self.sendAction('SIPshowregistry')
@@ -80,6 +83,7 @@ class AMIConnector(object):
 
 	def onReload(self, ami, event):
 		print 'reload',event
+		reload_peers()
 
 	def onChannelHangup(self, ami, event):
 		print 'channel hangup',event

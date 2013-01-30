@@ -68,6 +68,9 @@ class CallsResource(Resource):
 	else:
 		calls = model.query(Call)
 	for call in calls:
+		if not call.user:
+			print "call without user!", call
+			continue
 		event = {}
 		event['start'] = self.format_date(call.timestamp)
 		event['end'] = self.format_date(call.timestamp+datetime.timedelta(seconds=float(call.duration)))

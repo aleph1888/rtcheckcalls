@@ -90,6 +90,7 @@ class SipPeer(Base):
 	callbackextension = Column(String(40))
 	sippasswd = Column(String(80))
 	insecure = Column(String(40))
+	fullcontact = Column(String(80))
 	def __repr__(self):
 		return "<SipPeer('%s', '%s', %s, '%s', '%s')>" % (self.name, self.regexten, self.useragent, self.transport, self.encryption)
 

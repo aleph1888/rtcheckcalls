@@ -35,6 +35,14 @@ class PeersResource(Resource):
 		event['username'] = peer_name
 		event['exten'] = peer.regexten
 		event['channel'] = False
+		if 'transport=TLS' in peer.fullcontact:
+			event['tls'] = True
+		else:
+			event['tls'] = False
+		if peer.encryption == 'yes':
+			event['srtp'] = True
+		else:
+			event['srtp'] = False
 		sse.resource.notify(event, 'peer' ,'all')
 	else:
 		sse.resource.notify(event, 'peer' ,'all')
@@ -64,9 +72,10 @@ class PeersResource(Resource):
 		     "channels": [],
 		     "end": []}
 	for line in lines[1:]:
-		line = line.replace("D   N", "")
+		line = line.replace(" D ", "")
 		line = line.replace(" N ", "")
 		line = line.replace(" a ", "")
+		line = line.replace(" A ", "")
 		line = line.replace("Cached RT", "")
 		parts = line.split()
 		parts = map(lambda s: s.strip("()"), parts)
@@ -76,26 +85,32 @@ class PeersResource(Resource):
 		ext = None
 		port = parts[2].strip()
 		peer = model.query(SipPeer).filter_by(name=peer_name).first()
+		output = {'name': peer_name, 'status': parts[3]}
 		if peer:
 			ext = peer.regexten
 		if ext: # and "192.168." in line:
 			# line = self.add_ip_href(line)
 			dest = 'local'
+			if peer.encryption == 'yes':
+				output['srtp'] = True
+			else:
+				output['srtp'] = False
+			if 'transport=TLS' in peer.fullcontact:
+				output['tls'] = True
+			else:
+				output['tls'] = False
 		else:
 			dest = 'channels'
 		if len(parts) > 4 and not port == '0':
 			# connected
 			if dest == 'channels':
-				output = [peer_name, parts[3], parts[4]]
+				output['ping'] = parts[4]
 			else:
-				output = [peer_name, ext, parts[3], parts[4]]
+				output['exten'] = ext
+				output['ping'] = parts[4]
 		elif len(parts) > 3:
-			if dest == 'channels':
-					output = [peer_name, parts[3]]
-			else:
-				output = [peer_name, ext, parts[3]]
-		else:
-			continue
+			if ext:
+				output['exten'] = ext
 		formatted[dest].append(output)
 	return formatted
 
@@ -111,9 +126,10 @@ class PeersResource(Resource):
 		     "channels": "<tr><th>Nombre</th><th>Estado</th><th>Latencia</th><tr>\n",
 		     "end": "<tr><th>Nombre</th><th>Ext</th><th>Estado</th><th>Latencia</th><tr>\n"}
 	for line in lines[1:]:
-		line = line.replace("D   N", "")
+		line = line.replace(" D ", "")
 		line = line.replace(" N ", "")
 		line = line.replace(" a ", "")
+		line = line.replace(" A ", "")
 		line = line.replace("Cached RT", "")
 		parts = line.split()
 		parts = map(lambda s: s.strip("()"), parts)
@@ -125,7 +141,7 @@ class PeersResource(Resource):
 		if peer:
 			ext = peer.regexten
 
-		if "OK" in line and ext: # and "192.168." in line:
+		if ("OK" in line or "LAGGED" in line) and ext: # and "192.168." in line:
 			# line = self.add_ip_href(line)
 			dest = 'local'
 		elif ext:

@@ -46,8 +46,8 @@ class CreditResource(Resource):
 		except:
 			return redirectTo(request.path, request)
 		if section == 'add' and logged.admin:
-			self.add_credit([args['user'], args['credit']])
-			return redirectTo("/user/" + args['user'], request)
+			user_ext = self.add_credit([args['user'], args['credit']])
+			return redirectTo("/user/" + user_ext, request)
 		elif section == 'transfer':
 			self.transfer_credit(logged, [args['user'], args['credit']])
 			return redirectTo("/user/" + logged.voip_id, request)
@@ -66,12 +66,12 @@ class CreditResource(Resource):
     def transfer_credit(self, logged, args):
 	user = args[0]
 	credit = Decimal(args[1])
-	accounting.transfer_credit(logged, user, credit)
+	return accounting.transfer_credit(logged, user, credit)
 
     def add_credit(self, args):
 	user = args[0]
 	credit = Decimal(args[1])
-	accounting.add_credit(user, credit)
+	return accounting.add_credit(user, credit)
 
     def getChild(self, name, request):
         return self

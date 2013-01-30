@@ -1,6 +1,10 @@
 // Unavailable states
 var UNAVAILABLE = Array('UNKNOWN', 'UNREACHABLE');
 
+ICON_CLOUD = 'M24.345,13.904c0.019-0.195,0.03-0.392,0.03-0.591c0-3.452-2.798-6.25-6.25-6.25c-2.679,0-4.958,1.689-5.847,4.059c-0.589-0.646-1.429-1.059-2.372-1.059c-1.778,0-3.219,1.441-3.219,3.219c0,0.21,0.023,0.415,0.062,0.613c-2.372,0.391-4.187,2.436-4.187,4.918c0,2.762,2.239,5,5,5h15.875c2.762,0,5-2.238,5-5C28.438,16.362,26.672,14.332,24.345,13.904z';
+
+ICON_LOCK = Raphael.transformPath('M24.875,15.334v-4.876c0-4.894-3.981-8.875-8.875-8.875s-8.875,3.981-8.875,8.875v4.876H5.042v15.083h21.916V15.334H24.875zM10.625,10.458c0-2.964,2.411-5.375,5.375-5.375s5.375,2.411,5.375,5.375v4.876h-10.75V10.458zM18.272,26.956h-4.545l1.222-3.667c-0.782-0.389-1.324-1.188-1.324-2.119c0-1.312,1.063-2.375,2.375-2.375s2.375,1.062,2.375,2.375c0,0.932-0.542,1.73-1.324,2.119L18.272,26.956z', 's0.5,0.5t8,0')
+
 // Raphael canvas
 var paper;
 
@@ -230,7 +234,7 @@ function update_channel(elmt, x, y, pos_rad) {
 	}
 }
 
-function create_channel(channels, name, nick, latency, state, is_channel, size) {
+function create_channel(channels, name, nick, latency, state, is_channel, size, pars) {
 		if (!channels[name]) {
 			// New channel
 			if (is_channel || (state == 'OK' || state == 'LAGGED')) {
@@ -258,6 +262,29 @@ function create_channel(channels, name, nick, latency, state, is_channel, size) 
 				channel.new_state = state;
 			}
 		}
+		if (!channels[name])
+			return;
+
+		if (channels[name].icon) {
+			channels[name].icon.translate(1000,1000)
+			channels[name].icon.remove()
+			channels[name].icon = null
+		}
+
+		if (state == 'LAGGED') {
+			channels[name].icon = paper.path(ICON_CLOUD).attr({fill: "#000", stroke: "#FFF"});
+			channels[name].iconpos = [0,0]
+		}
+		if (pars && 'srtp' in pars) {
+			if (channels[name].lockicon) {
+				channels[name].lockicon.remove()
+				channels[name].lockicon = null
+			}
+			if (pars['srtp']) {
+				channels[name].lockicon = paper.path(ICON_LOCK).attr({fill: "#FFF", stroke: "#000"});
+				channels[name].lockiconpos = [0,0]
+			}
+		}
 }
 
 function position_channels(channels, radius) {
@@ -273,27 +300,40 @@ function position_channels(channels, radius) {
 
 		// Animate position and style
 		update_channel(elmt, x, y, pos_rad);
+		if (elmt.icon) {
+			elmt.icon.translate(-elmt.iconpos[0], -elmt.iconpos[1])
+			elmt.icon.translate(x-16, y-24)
+			elmt.iconpos = [x-16, y-24]
+		}
+		if (elmt.lockicon) {
+			elmt.lockicon.translate(-elmt.lockiconpos[0], -elmt.lockiconpos[1])
+			elmt.lockicon.translate(x-16, y-24)
+			elmt.lockiconpos = [x-16, y-24]
+		}
+
 	}
 }
 
 function create_channels(data_source, channels, radius, size, is_channel) {
 	// Create new channels
-	for (var i=0; i<data_source.length; i++) {
+	var keys = Object.keys(data_source);
+	for (var i=0; i<keys.length; i++) {
+		var key = keys[i];
 		var name, nick, state, latency, channel;
-		var data = data_source[i];
+		var data = data_source[key];
 		if (is_channel) {
-			nick = data[0];
-			state = data[1];
-			latency = data[2];
+			nick = data['name'];
+			state = data['status'];
+			latency = data['ping'];
 			ext = nick
 		}
 		else {
-			ext = data[1];
-			nick = data[0];
-			state = data[2];
-			latency = data[3];
+			ext = data['exten'];
+			nick = data['name'];
+			state = data['status'];
+			latency = data['ping'];
 		}
-		create_channel(channels, ext, nick, latency, state, is_channel, size)
+		create_channel(channels, ext, nick, latency, state, is_channel, size, data)
 	}
 	position_channels(channels, radius)
 }
@@ -335,7 +375,7 @@ function parse_call(pars) {
 	var call_id = pars['linkedid'];
 	var call;
 	var action = pars['eventname'];
-	var from = pars['calleridani'];
+	var from = pars['calleridnum'];
 	var to = pars['exten'];
 	console.log(from+" "+to)
 
@@ -452,11 +492,14 @@ $(document).ready( function () {
 			section = 'channels'
 		else
 			section = 'local'
-		if (peer_event['peerstatus'] == 'Registered')
+		if (peer_event['peerstatus'] == 'Registered' || peer_event['peerstatus'] == 'Reachable')
 			status = 'OK'
+		else if (peer_event['peerstatus'] == 'Lagged')
+			status = 'LAGGED'
 		else
 			status = 'UNREACHABLE'
-		create_channel(all_channels['local'], name, nick, latency, status, peer_event['channel'], 8);
+		console.log(peer_event)
+		create_channel(all_channels['local'], name, nick, latency, status, peer_event['channel'], 8, peer_event);
 		position_channels(all_channels['local'], 90.0);
 	}, false);
 

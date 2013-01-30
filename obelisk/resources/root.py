@@ -1,3 +1,5 @@
+import os
+
 from twisted.web.resource import Resource
 from twisted.web.static import File
 from twisted.web.wsgi import WSGIResource
@@ -28,11 +30,14 @@ from obelisk.resources import sse
 
 from obelisk import session
 
+import obelisk
+
 class RootResource(Resource):
     def __init__(self):
         Resource.__init__(self)
 	ami.connect()
 	self.call_manager = CallManager()
+	our_dir = os.path.dirname(os.path.dirname(obelisk.__file__))
 	ami.connector.registerEvent('CEL', self.call_manager.on_event)
         self.putChild("voip", PeersResource())
         self.putChild("prices", PricesResource())
@@ -48,7 +53,7 @@ class RootResource(Resource):
         self.putChild("login", LoginResource())
         self.putChild("logout", LogoutResource())
         self.putChild("icons", File("/usr/share/icons"))
-        self.putChild("tpl", File("/home/caedes/rtcheckcalls/templates"))
+        self.putChild("tpl", File(os.path.join(our_dir, "templates")))
         self.putChild("sip", File("/home/lluis/tst_sip_gui"))
         self.putChild("jssip", File("/home/caedes/jssip"))
 	reactor.callLater(1, self.get_winners)
@@ -82,6 +87,7 @@ class RootResource(Resource):
 			output_user += "<li><a href='/user/accounts'>credito total</a></li>"
 			output_user += "<li><a href='/providers'>precios proveedores</a></li>"
 			output_user += "<li><a href='/calls'>llamadas</a></li>"
+			output_user += "<li><a href='/tpl/sse.html'>ojo de mordor</a></li>"
 			user_ext += " eres admin"
 		output_user += "<li><a href='/logout'>logout</a></li>"
 
