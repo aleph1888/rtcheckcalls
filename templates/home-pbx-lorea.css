@@ -4,6 +4,7 @@ body{
 	font-size: 1em;
 	background-color: #222;
 	color: #ccc;
+	background-image: url('noise.png') repeat;
 }
 
 

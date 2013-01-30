@@ -2,7 +2,7 @@ from twisted.web.resource import Resource
 import subprocess
 from datetime import datetime
 
-from obelisk.prices import list_prices_json
+from obelisk.asterisk.prefixes import list_prices_json
 from obelisk.templates import print_template
 
 class PricesResource(Resource):

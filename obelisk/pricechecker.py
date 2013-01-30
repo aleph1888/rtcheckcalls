@@ -12,7 +12,7 @@ global winners
 winners = {}
 
 providers = {}
-providers['freevoip'] = "http://www.freevoipdeal.com/calling_rates/"
+providers['freevoipdeal'] = "http://www.freevoipdeal.com/calling_rates/"
 providers['voipbuster'] = "https://www.voipbuster.com/en/rates"
 providers['12voip'] = "http://www.12voip.com/calling_rates"
 providers['voipdiscount'] = "http://www.voipdiscount.com/rates"
@@ -41,6 +41,7 @@ providers['voipcheap']= "http://www.voipcheap.com/rates"
 providers['voipbusterpro']= "http://www.voipbusterpro.com/rates"
 providers['voipgain']= "http://www.voipgain.com/rates"
 providers['voipraider']= "http://www.voipraider.com/en/rates"
+providers['stuntcalls']= "http://www.stuntcalls.com/rates"
 #providers['bestvoipreselling']= "https://www.bestvoipreselling.com/rates"
 providers['voipstunt']= "http://www.voipstunt.com/en/calling_rates"
 providers['voipwise']= "http://www.voipwise.com/rates"
@@ -53,15 +54,49 @@ providers['hotvoip']="http://www.hotvoip.com/rates"
 providers['voipyo']="http://voipyo.com/rates"
 providers['terrssip']="http://www.terrasip.com/index.php?seite=tarife4&t_country=gb&language=gb&t_lang=en"
 
+codes = {}
+
+def parse_codes():
+	global codes
+	f = open('data/countries.data')
+	data = f.readlines()
+	f.close()
+	for line in data:
+		parts = line.split(":")
+		type = None
+		if len(parts) > 1:
+			name = parts[0].strip()
+			code = parts[1].strip()
+			if "-" in code:
+				parts = code.split("-")
+				code = parts[0]
+				type = parts[1]
+			codes[name] = [code, type]
+	return codes
+	
+parse_codes()
+
 def find_country_info(data, pos):
 	pos2 = data.find('&nbsp;', pos)
 
 	country = data[pos+(len('<td class="column-country">')):pos2]
+	type = None
+	if country in codes:
+		country, type = codes[country]
+	else:
+		print "No code for", country
+		country = country
 
 	pos3 = data.find('<span class="type">', pos)
 	pos4 = data.find('</span>', pos3)
 
-	type = data[pos3+len('<span class="type">'):pos4].strip("()")
+	if not type:
+		type = data[pos3+len('<span class="type">'):pos4].strip("()")
+		if type in codes:
+			type, _ = codes[type]
+		else:
+			print "No code for", type
+			country = type
 
 	pos5 = data.find('<td class="column-vat">', pos)
 	pos6 = data.find('</td>', pos5)
@@ -84,7 +119,7 @@ def check_provider(rates_url):
 
 def get_saved_winners():
 	global winners
-	f = open('providers.json')
+	f = open('data/winners.json')
 	data = f.read()
 	f.close()
 	try:
@@ -96,6 +131,7 @@ def get_saved_winners():
 
 def get_winners(daemon=False):
 	global winners
+	seen_countries = set()
 	if not daemon:
 		# running in rtcheckcalls, return saved winners from daemon
 		return get_saved_winners()
@@ -103,6 +139,9 @@ def get_winners(daemon=False):
 	for provider in providers:
 		try:
 			rates[provider] = check_provider(providers[provider])
+			f = open('data/providers/' + provider + '.json', 'w')
+			f.write(json.dumps(rates[provider]))
+			f.close()
 		except:
 			print "error on", provider
 
@@ -137,11 +176,20 @@ def get_winners(daemon=False):
 def save_winners():
 	print "checking"
 	winners = get_winners(True)
-	f = open('providers.json', 'w')
+	f = open('data/winners.json', 'w')
 	f.write(json.dumps(winners))
 	f.close()
 	reactor.callLater(600, save_winners)
 	print "saving"
+
+def load_provider(name):
+	try:
+		f = open('data/providers/' + name + '.json')
+	except:
+		return {}
+	data = f.read()
+	f.close()
+	return json.loads(data)
 
 
 if __name__ == '__main__':

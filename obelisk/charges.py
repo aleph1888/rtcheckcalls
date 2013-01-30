@@ -11,18 +11,24 @@ def get_charges(user_ext):
 	for charge in user.charges:
 		date = charge.timestamp
 		credit = charge.credit
-		concept = ""
+		if charge.concept:
+			concept = charge.concept
+		else:
+			concept = ''
 		res += "<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n" % (date, credit,concept)
 	return res
 
-def add_charge(user_ext, amount):
+def add_charge(user_ext, amount, concept=""):
 	model = Model()
 	user = model.get_user_fromext(user_ext)
 	if not user:
 		user = User(user_ext)
 		model.session.add(user)
 
-	charge = Charge(user=user, timestamp=datetime.now(), credit=amount)
+	if concept:
+		charge = Charge(user=user, timestamp=datetime.now(), credit=amount, concept=concept)
+	else:
+		charge = Charge(user=user, timestamp=datetime.now(), credit=amount)
 	model.session.add(charge)
 	
 	model.session.commit()

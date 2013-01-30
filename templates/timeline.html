@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+ "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+   <!-- See http://developer.yahoo.com/yui/grids/ for info on the grid layout -->
+   <title>Calls timeline</title>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+
+   <link rel="stylesheet" type="text/css" href="/tpl/timeline/styles.css">
+   <link rel="stylesheet" href="/tpl/home-pbx-lorea.css">
+   <link rel="stylesheet" href="/tpl/timeline/local_example.css" type="text/css">
+   <link rel="stylesheet" href="/tpl/timeline/css/dark-theme.css" type="text/css">
+
+   <script>
+      Timeline_ajax_url="https://pbx.lorea.org/tpl/timeline/timeline_ajax/simile-ajax-api.js";
+      Timeline_urlPrefix='https://pbx.lorea.org/tpl/timeline/timeline_js/';       
+      Timeline_parameters='bundle=true';
+   </script>
+
+   <!-- Load the Timeline library after reseting the fonts, etc -->
+   <script src="/tpl/timeline/timeline-api.js?bundle=true" type="text/javascript"></script>
+   <script src="/tpl/timeline/calls_timeline.js" type="text/javascript"></script>
+ 
+
+</head>
+<body onload="onLoad();" onresize="onResize();">
+		<div id="main-wrapper">
+<header id="header">
+	<a href="/">inicio</a>
+	<div id="logo">%%logo%%</div>					
+</header>
+		
+
+   <div id="hd" role="banner">
+     <h1>Llamadas</h1>
+   </div>
+   <div id="bd" role="main">
+	   <div class="yui-g">
+	     <div id='tl' style="height: 330px; margin-top: 20px; margin-bottom: 50px;" class='dark-theme'></div>
+	   </div>
+	 </div>
+   <div id="ft" role="contentinfo">
+   </div>
+</div>
+</body>
+</html>
+
+

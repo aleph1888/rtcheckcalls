@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<!-- http://jvectormap.com/ -->
+<!-- http://raphaeljs.com/world/ -->
+<html>
+
+	<head>
+		<title>home pbx</title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="/tpl/home-pbx-lorea.css">
+		<link rel="stylesheet" href="/tpl/js/jvectormap/jquery-jvectormap.css">
+		<style type="text/css">
+			.ui-tooltip {
+				border: 3px solid #aaa;
+				border-radius: 5px;
+				background: rgba(20, 20, 20, 1);
+				width: 200px;
+				padding: 5px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="main-wrapper">
+			<header id="header">
+				<a href="/">inicio</a>
+				<div id="logo">%%logo%%</div>					
+			</header>
+			
+			<div id="content">
+				
+				<h2>Precios</h2>
+				<section id="img-logo"><img src="/tpl/hard-hat.png"/></section>
+				<section id="content_inner">
+					<div id="map" style="width: 1000px; height: 500px"></div>	
+				</section>
+
+				<section id="listado-enlaces">
+	<!--				<ul>
+						%%LINKS%%
+					</ul>
+					-->
+				</section>
+
+			</div>
+      <!------ fin del content ---- -->
+			<footer id="footer"></footer>
+		</div>
+		<script type="text/javascript" src="/tpl/js/jquery.js"></script>
+		<script src="/tpl/js/jvectormap/jquery-jvectormap.js"></script>
+		<script src="/tpl/js/jvectormap/jquery-mousewheel.js"></script>
+
+		<script src="/tpl/js/jvectormap/lib/jvectormap.js"></script>
+
+		<script src="/tpl/js/jvectormap/lib/abstract-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/abstract-canvas-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/abstract-shape-element.js"></script>
+
+		<script src="/tpl/js/jvectormap/lib/svg-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/svg-group-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/svg-canvas-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/svg-shape-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/svg-path-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/svg-circle-element.js"></script>
+
+		<script src="/tpl/js/jvectormap/lib/vml-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/vml-group-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/vml-canvas-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/vml-shape-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/vml-path-element.js"></script>
+		<script src="/tpl/js/jvectormap/lib/vml-circle-element.js"></script>
+
+		<script src="/tpl/js/jvectormap/lib/vector-canvas.js"></script>
+		<script src="/tpl/js/jvectormap/lib/simple-scale.js"></script>
+		<script src="/tpl/js/jvectormap/lib/numeric-scale.js"></script>
+		<script src="/tpl/js/jvectormap/lib/ordinal-scale.js"></script>
+		<script src="/tpl/js/jvectormap/lib/color-scale.js"></script>
+		<script src="/tpl/js/jvectormap/lib/data-series.js"></script>
+		<script src="/tpl/js/jvectormap/lib/proj.js"></script>
+		<script src="/tpl/js/jvectormap/lib/world-map.js"></script>
+
+		<script src="/tpl/js/jvectormap/tests/assets/jquery-jvectormap-world-mill-en.js"></script>
+		<script type="text/javascript">
+			prices = %%prices%%;
+			countries = {};
+			$.each(prices, function(country_code, value) {
+				if (value.fix == 'gratis') {
+					countries[country_code.toUpperCase()] = 'fix-free';
+				} else {
+					countries[country_code.toUpperCase()] = 'fix-pay';
+				}
+			});
+			$(function() {
+				$.each(prices, function(index, value) {
+					$("." + index.toLowerCase()).css('fill', '#ffb500').attr('title', '<b>' + index + '</b><br />fix: ' + prices[index].fix + '<br />mob: ' + prices[index].mob);
+				});
+				$('#map').vectorMap({
+					map: 'world_mill_en',
+					backgroundColor: $('body').css('background-color'),
+					focusOn: {
+						x: 0.5,
+						y: 0.5,
+						scale: 1
+					},
+					series: {
+						regions: [{
+							scale: {
+								'fix-free': '#FF69B4',
+								'fix-pay': '#4169E1'
+							},
+							attribute: 'fill',
+							values: countries,
+						}]
+					},
+					onRegionLabelShow: function(e, label, code) {
+						code = code.toLowerCase();
+						if (prices[code]) {
+							label.html('<strong>'+label.html()+'</strong><br />Fix: '+prices[code].fix+'<br />Mob: '+prices[code].mob);
+						} else {
+							label.html('<strong>'+label.html()+'</strong><br />Not available yet');
+						}
+					}
+				});
+			});
+		</script>
+	</body>
+
+</html>
+

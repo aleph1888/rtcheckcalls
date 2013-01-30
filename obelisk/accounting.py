@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from obelisk import charges
 from obelisk.model import Model, User
+from obelisk.resources import sse
 
 class Accounting(object):
 	def __init__(self):
@@ -27,7 +28,22 @@ class Accounting(object):
 		user = self.model.get_user_fromext(user_ext)
 		user.credit = Decimal()
 		self.model.session.commit()
-		
+
+	def transfer_credit(self, logged, user_ext, credit):
+		if not (credit > 0.0 and logged.credit >= credit):
+			return
+		user = self.model.get_user_fromext(user_ext)
+		if not user:
+			user = User(user_ext)
+			self.model.session.add(user)
+		logged.credit -= Decimal(credit)
+		user.credit += Decimal(credit)
+		self.model.session.commit()
+		charges.add_charge(user_ext, credit, 'transferencia de ' + logged.voip_id)
+		charges.add_charge(logged.voip_id, -credit, 'transferencia a ' + user_ext)
+		sse.resource.notify({'credit':float(user.credit), 'user':user.voip_id}, "credit", user)
+		sse.resource.notify({'credit':float(logged.credit), 'user':logged.voip_id}, "credit", logged)
+	
 	def add_credit(self, user_ext, credit):
 		user = self.model.get_user_fromext(user_ext)
 		if not user:
@@ -36,6 +52,7 @@ class Accounting(object):
 		user.credit += Decimal(credit)
 		self.model.session.commit()
 		charges.add_charge(user_ext, credit)
+		sse.resource.notify({'credit':float(user.credit), 'user':user.voip_id}, "credit", user)
 
 	def remove_credit(self, user_ext, credit):
 		user = self.model.get_user_fromext(user_ext)

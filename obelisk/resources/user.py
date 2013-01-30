@@ -5,7 +5,7 @@ from datetime import datetime
 import csv
 
 from obelisk.accounting import accounting
-from obelisk.parseusers import parse_users
+from obelisk.asterisk.users import parse_users
 from decimal import Decimal
 from obelisk import charges
 from obelisk import calls
@@ -19,7 +19,6 @@ class UserResource(Resource):
     def __init__(self):
 	print "INIT ACCOUNT RESOURCE"
 	Resource.__init__(self)
-	self._users, self._passwords = parse_users("/etc/asterisk/sip.conf")
 	self._accounting = accounting
     def add_ip_href(self, line):
 	ip_start = line.find("192.168.")
@@ -38,6 +37,7 @@ class UserResource(Resource):
 	    return ""
 	ext_start = dialplan_line.find("'")
 	return dialplan_line[ext_start+1: dialplan_line.find("'", ext_start+1)]
+
     def render_GET(self, request):
         args = {}
         for a in request.args:
@@ -52,9 +52,6 @@ class UserResource(Resource):
 			user = parts[2]
 			if user == 'accounts':
 				res = self.render_accounts(request)
-			elif user == 'addcredit' and logged and logged.admin:
-				self.add_credit(parts[3:])
-				return redirectTo("/user/" + parts[3], request)
 			elif logged and (logged.voip_id == user or logged.admin == 1):
 				res = self.render_user(user, request)
 				return res
@@ -64,10 +61,6 @@ class UserResource(Resource):
 		return print_template('content-pbx-lorea', {'content': res})
 	else:
 		return res
-    def add_credit(self, args):
-	user = args[0]
-	credit = Decimal(args[1])
-	accounting.add_credit(user, credit)
 
     def render_accounts(self, request):
 	res = "<h2>accounts</h2>"
@@ -76,10 +69,11 @@ class UserResource(Resource):
 		return redirectTo("/", request)
 	data = self._accounting.get_data()
 	total_credit = Decimal()
+	users, _ = parse_users("/etc/asterisk/sip.conf")
 	for ext, credit in data.items():
 		username = "unknown"
-		if ext in self._users:
-			username = self._users[ext]
+		if ext in users:
+			username = users[ext]
 		res += "<p>%s <a href='/user/%s'>%s</a> %.3f</p>" % (str(ext), str(ext), str(username), credit)
 		total_credit += Decimal(credit)
 	res += "<p>total credit: %s</p>" % (total_credit,)
@@ -87,8 +81,10 @@ class UserResource(Resource):
 
     def render_user(self, user_ext, request):
 	model = Model()
-	if user_ext in self._users:
-		username = self._users[user_ext]
+	users, _ = parse_users("/etc/asterisk/sip.conf")
+	creditlink = ''
+	if user_ext in users:
+		username = users[user_ext]
 	else:
 		username = user_ext
 	user = model.get_user_fromext(user_ext)
@@ -97,12 +93,20 @@ class UserResource(Resource):
 		credit = "%.3f" % (user.credit,)
 		user_charges = charges.get_charges(user_ext)
 		user_calls = calls.get_calls(user_ext, logged)
+		creditlink = ""
+		if user.credit > 0:
+			if user.voip_id == logged.voip_id:
+				creditlink += '<a href="/credit/transfer">Transferir</a>'
+			else:
+				creditlink += '<a href="/credit/transfer/%s">Transferir</a>' % (user.voip_id)
+		if logged.admin:
+			creditlink += ' <a href="/credit/add/%s">Crear</a>' % (user.voip_id)
 	else:
 		credit = 0.0
 		user_charges = ""
 		user_calls = ""
 	all_calls = self.render_user_calls(user_ext, request)
-	args = {'ext': user_ext, 'username': username, 'credit': credit, 'calls': user_calls, 'charges': user_charges, 'all_calls': all_calls}
+	args = {'ext': user_ext, 'username': username, 'credit': credit, 'credit_link':creditlink ,'calls': user_calls, 'charges': user_charges, 'all_calls': all_calls}
 	return print_template('user-pbx-lorea', args)
     def render_user_calls(self, user_ext, request):
 	FILE = "/var/log/asterisk/cdr-csv/Master.csv"
@@ -136,7 +140,7 @@ class UserResource(Resource):
 				from_ext = "<a href='/user/%s'>%s</a>" % (from_ext, from_ext)
 			if not to_ext == user_ext and logged.admin:
 				to_ext = "<a href='/user/%s'>%s</a>" % (to_ext, to_ext)
-			calls = ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" % (date, from_ext, to_ext, delta, date, status)) + calls
+			calls = ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" % (date, from_ext, to_ext, delta, status)) + calls
 
 		#if status == "ANSWERED" and (billsecs > umbra or not umbra):
 		#	print from_ext,"->"," "*(14-len(a[2]))+a[2]+" ["+str(billsecs)+"]\t"+str(t1.day)+"\t"+str(t1.hour)

@@ -12,13 +12,14 @@
 	<body>
 		<div id="main-wrapper">
 			<header id="header">
-						<a href="/">inicio</a>
+				<a href="/">inicio</a>
 				<div id="logo">%%logo%%</div>				
 				<dl id="user">
 						<dt class="title-user"><h2>Usuario</h2></dt>
 							<dd class="username">%%username%%</dd>
 						<dt class="user-credit-title">Crédito</dt>
 							<dd class="user-credit">%%credit%%</dd>
+							<dd class="user-credit">%%credit_link%%</dd>
 						<dt class="user-number-title">Numero PLN</dt>
 							<dd class="user-number">0000 10 %%ext%%</dd>
 				</dl>
@@ -69,7 +70,6 @@
 									<td>Numero de origen</td>
 									<td>Destino</td>
 									<td>Duración</td>
-									<td>fecha de llamada</td>
 									<td>Resultado</td>
 								</tr>
 							</thead>
@@ -81,7 +81,9 @@
 
 			</div>
       <!------ fin del content ---- -->
-			<footer id="footer"><a href="/logout">logout</a></footer>
+			<footer id="footer"><a href="/logout">logout</a>
+					    <a href="/options/%%ext%%">opciones</a>
+					    <a href="/password/%%ext%%">change pass</a></footer>
 		</div>
 	</body>
 

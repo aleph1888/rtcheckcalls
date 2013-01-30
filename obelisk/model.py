@@ -19,6 +19,9 @@ class User(Base):
 	voip_id = Column(String(50))
 	credit = Column(Numeric(10,6), default=0.0)
 	admin = Column(Boolean, default=False)
+	name = Column(String(50))
+	email = Column(String(128))
+	email_validated = Column(Boolean, default=False)
 
 	def __init__(self, voip_id):
 		self.voip_id = voip_id

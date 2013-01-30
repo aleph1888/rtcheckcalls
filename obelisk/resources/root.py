@@ -11,8 +11,17 @@ from obelisk.resources.login import LoginResource
 from obelisk.resources.stats import StatsResource
 from obelisk.resources.logout import LogoutResource
 from obelisk.resources.providers import ProvidersResource
+from obelisk.resources.calls import CallsResource
+from obelisk.resources.sse import SSEResource
+from obelisk.resources.credit import CreditResource
+from obelisk.resources.register import RegisterResource
+from obelisk.resources.options import OptionsResource
+from obelisk.resources.changepass import ChangePassResource
 from obelisk.templates import print_template
 from obelisk.pricechecker import get_winners
+
+from obelisk.testchannels import TestChannels
+from obelisk.resources import sse
 
 from obelisk import session
 
@@ -22,6 +31,12 @@ class RootResource(Resource):
         self.putChild("voip", PeersResource())
         self.putChild("prices", PricesResource())
         self.putChild("user", UserResource())
+        self.putChild("sse", SSEResource())
+        self.putChild("calls", CallsResource())
+        self.putChild("password", ChangePassResource())
+        self.putChild("credit", CreditResource())
+        self.putChild("register", RegisterResource())
+        self.putChild("options", OptionsResource())
         self.putChild("stats", StatsResource())
         self.putChild("providers", ProvidersResource())
         self.putChild("login", LoginResource())
@@ -31,10 +46,18 @@ class RootResource(Resource):
         self.putChild("sip", File("/home/lluis/tst_sip_gui"))
         self.putChild("jssip", File("/home/caedes/jssip"))
 	reactor.callLater(1, self.get_winners)
+	reactor.callLater(1, self.get_channel_test)
+	self.channel_tester = TestChannels()
 
     def get_winners(self):
 	get_winners()
 	reactor.callLater(600, self.get_winners)
+
+    def get_channel_test(self):
+	reactor.callLater(5, self.get_channel_test)
+	test = self.channel_tester.get_rates()
+	if test:
+		sse.resource.notify(test, 'channels', 'all')
 
     def getChild(self, name, request):
         return self
@@ -52,11 +75,13 @@ class RootResource(Resource):
 		if user.admin == 1:
 			output_user += "<li><a href='/user/accounts'>credito total</a></li>"
 			output_user += "<li><a href='/providers'>precios proveedores</a></li>"
+			output_user += "<li><a href='/calls'>llamadas</a></li>"
 			user_ext += " eres admin"
 		output_user += "<li><a href='/logout'>logout</a></li>"
 
 	        return print_template('logged-pbx-lorea', {'LINKS':output, 'LOGGED_LINKS':output_user, 'user': user_ext})
 	else:
+		output += "<li><a href='/register'>registrarse</a></li>"
 	        return print_template('home-pbx-lorea', {'LINKS':output})
 
     def render_POST(self, request):
