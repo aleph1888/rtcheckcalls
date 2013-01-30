@@ -71,7 +71,7 @@ def check_prices():
 								better_deal += "%s [%s]\t%s %s %s %s %s\n" % (country_name, country, type, current_rate, providers[provider_code], winner_rate, str(winners[key][1]))
 						
 				else:
-					print country_name, country, type, "not available"
+					print country, type, "not available"
 			else:
 				print "unknown", provider_code
 	print "BETTER DEALS"

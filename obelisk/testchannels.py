@@ -15,17 +15,17 @@ class TestChannels(object):
 	#print raw_data
 	data = {}
 	for line in raw_data:
-		peer = line[:17].strip()
-		call_id = line[17:30].strip()[:10]
-		duration = line[30:39].strip()
-		rx_pack = line[39:51].strip()
-		rx_lost = line[51:62].strip()
-		rx_per = line[62:71].strip(" )(")
-		rx_jitter = line[71:78].strip()
-		tx_pack = line[78:90].strip()
-		tx_lost = line[90:101].strip()
-		tx_per = line[101:110].strip(" )(")
-		tx_jitter = line[110:].strip()
+		peer = line[:18].strip()
+		call_id = line[18:31].strip()[:10]
+		duration = line[31:40].strip()
+		rx_pack = line[40:52].strip()
+		rx_lost = line[52:63].strip()
+		rx_per = line[63:72].strip(" )(")
+		rx_jitter = line[72:79].strip()
+		tx_pack = line[79:91].strip()
+		tx_lost = line[91:102].strip()
+		tx_per = line[102:111].strip(" )(")
+		tx_jitter = line[111:].strip()
 		#print peer, call_id, rx_per, tx_per
 		data[call_id] = [call_id, duration, rx_pack, rx_lost, rx_per, rx_jitter, tx_pack, tx_lost, tx_per, tx_jitter]
 	return data
@@ -36,14 +36,14 @@ class TestChannels(object):
 	#print raw_data
 	data = {}
 	for line in raw_data:
-		peer = line[:17].strip()
-		user = line[17:34].strip()
-		call_id = line[34:51].strip()[:10]
-		format = line[51:68].strip()
-		hold = line[68:77].strip()
-		last_message = line[77:93].strip()
-		expiry = line[93:104].strip()
-		peer_name = line[104:].strip()
+		peer = line[:18].strip()
+		user = line[18:35].strip()
+		call_id = line[35:52].strip()[:10]
+		format = line[52:69].strip()
+		hold = line[69:78].strip()
+		last_message = line[78:94].strip()
+		expiry = line[94:105].strip()
+		peer_name = line[105:].strip()
 		if not 'nothing' in format:
 			#print "%s/"*8 % (peer, user, call_id, format, hold, last_message, expiry, peer_name)
 			data[call_id] = [peer, user, call_id, format, hold, last_message, expiry, peer_name]

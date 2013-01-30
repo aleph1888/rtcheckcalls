@@ -10,14 +10,12 @@ function onLoad() {
     theme1.timeline_start = new Date(Date.UTC(2012, 12, 1));
     theme1.timeline_stop  = new Date(Date.UTC(2013, 1, 1));
     
-    var d = "Wed Jan 03 2013 13:00:00 GMT+0100"
     var bandInfos = [
 	Timeline.createBandInfo({
 	    width:          "300", // set to a minimum, autoWidth will then adjust
 	    intervalUnit:   Timeline.DateTime.DAY,
 	    intervalPixels: 1200,
 	    eventSource:    eventSource1,
-	    date:           d,
 	    theme:          theme1,
 	    layout:         'original'  // original, overview, detailed
 	}),
@@ -26,9 +24,7 @@ function onLoad() {
 	    intervalUnit:   Timeline.DateTime.DAY, 
 	    intervalPixels: 200,
 	    eventSource:    eventSource1,
-	    date:           d, 
 	    overview:       true
-	   // theme:          theme
 	})
     ];
     bandInfos[1].syncWith = 0;
@@ -39,8 +35,6 @@ function onLoad() {
       // Called with first json file from server
       // Also initiates loading of second Band
       eventSource1.loadJSON(json, url);
-      // stop browser caching of data during testing by appending time
-      //tl.loadJSON("cubism1.js?"+ (new Date().getTime()), load_json2);
 	tl.finishedEventLoading();
     };
 						    

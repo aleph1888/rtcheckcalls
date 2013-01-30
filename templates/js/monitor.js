@@ -98,15 +98,13 @@ function elmt_tooltip(elmt, x, y, text, r2) {
 		circle.animate({r:r2}, 1000, "elastic")
 		if (!text_running) {
 			if (circle.nick == circle.name) {
-				if (circle.latency) {
-					text = circle.name + "/" + circle.state + "/" + circle.latency
-				}
-				else {
-					text = circle.name + "/" + circle.state
-				}
+				text = circle.name + "/" + circle.state;
 			}
 			else {
-				text = circle.nick + "/" + circle.name + "/" + circle.state + "/" + circle.latency
+				text = circle.nick + "/" + circle.name + "/" + circle.state;
+			}
+			if (circle.latency) {
+				text += "/" + circle.latency
 			}
 			text_running=true;
 			floats["text"+text] = paper.text(x+10, y, text)
@@ -222,30 +220,17 @@ function update_channel(elmt, x, y, pos_rad) {
 		elmt.x = x
 		elmt.y = y
 		if (elmt.new_state) {
-			floating_text(x, y, elmt.nick + " " + elmt.latency, color)
+			var text = elmt.nick;
+			if (elmt.latency)
+				text += " " + elmt.latency;
+			floating_text(x, y, text, color)
 			elmt.state = elmt.new_state
 			elmt.new_state = false
 		}
 	}
 }
 
-function create_channels(data_source, channels, radius, size, is_channel) {
-	// Create new channels
-	for (var i=0; i<data_source.length; i++) {
-		var name, nick, state, latency, channel;
-		var data = data_source[i];
-		if (is_channel) {
-			nick = data[0];
-			state = data[1];
-			latency = data[2];
-			name = nick
-		}
-		else {
-			name = data[1];
-			nick = data[0];
-			state = data[2];
-			latency = data[3];
-		}
+function create_channel(channels, name, nick, latency, state, is_channel, size) {
 		if (!channels[name]) {
 			// New channel
 			if (is_channel || (state == 'OK' || state == 'LAGGED')) {
@@ -263,14 +248,19 @@ function create_channels(data_source, channels, radius, size, is_channel) {
 			channel = channels[name];
 			if (latency != channel.latency) {
 				channel.latency = latency;
-				glowing_text(channel, channel.x, channel.y, channel.nick + " " + channel.latency, channel.color)
+				if (latency)
+					text = channel.nick + " " + latency;
+				else
+					text = channel.nick;
+				glowing_text(channel, channel.x, channel.y, channel.nick, channel.color);
 			}
 			if (channel.state != state) {
 				channel.new_state = state;
 			}
 		}
+}
 
-	}
+function position_channels(channels, radius) {
 	// Position objects in a circle and set other animations
 	var keys = Object.keys(channels);
 	for (var i=0; i<keys.length; i++) {
@@ -284,6 +274,28 @@ function create_channels(data_source, channels, radius, size, is_channel) {
 		// Animate position and style
 		update_channel(elmt, x, y, pos_rad);
 	}
+}
+
+function create_channels(data_source, channels, radius, size, is_channel) {
+	// Create new channels
+	for (var i=0; i<data_source.length; i++) {
+		var name, nick, state, latency, channel;
+		var data = data_source[i];
+		if (is_channel) {
+			nick = data[0];
+			state = data[1];
+			latency = data[2];
+			ext = nick
+		}
+		else {
+			ext = data[1];
+			nick = data[0];
+			state = data[2];
+			latency = data[3];
+		}
+		create_channel(channels, ext, nick, latency, state, is_channel, size)
+	}
+	position_channels(channels, radius)
 }
 
 function create_call(call_id, x, y, text, from, to, pars) {
@@ -319,14 +331,13 @@ function check_legs(channel_data, from, to, call) {
 	}
 }
 
-function parse_call(data) {
-	data = data.substring(1);
-	var pars = data.split('","');
-	var call_id = pars[15];
+function parse_call(pars) {
+	var call_id = pars['linkedid'];
 	var call;
-	var action = pars[0];
-	var from = pars[3];
-	var to = pars[7];
+	var action = pars['eventname'];
+	var from = pars['calleridani'];
+	var to = pars['exten'];
+	console.log(from+" "+to)
 
 	if (calls[call_id])  {
 		call = calls[call_id]
@@ -350,6 +361,7 @@ function parse_call(data) {
 	for(var i=0; i<keys.length; i++) {
 		involved[involved.length] = call.legs[keys[i]];
 	}
+	console.log(involved)
 	// Check call state
 	switch (action) {
 	    case "ANSWER":
@@ -428,10 +440,32 @@ $(document).ready( function () {
 		create_channels(data['channels'], all_channels['channels'], 150.0, 12, true);
 	}, false);
 
+	source.addEventListener('peer', function(e) {
+		var peer_event = JSON.parse(e.data);
+		//  {'peerstatus': 'Registered', 'peer': 'SIP/caedes', 'address': '109.69.14.162:42413', 'privilege': 'system,all', 'channeltype': 'SIP', 'event': 'PeerStatus'}
+		// create_channel(channels, name, nick, latency, state, is_channel, size)
+		var name = peer_event['exten']
+		var nick = peer_event['username']
+		var latency = null
+		var status = null
+		if (peer_event['channel'])
+			section = 'channels'
+		else
+			section = 'local'
+		if (peer_event['peerstatus'] == 'Registered')
+			status = 'OK'
+		else
+			status = 'UNREACHABLE'
+		create_channel(all_channels['local'], name, nick, latency, status, peer_event['channel'], 8);
+		position_channels(all_channels['local'], 90.0);
+	}, false);
+
+
 	source.addEventListener('rtcheckcalls', function(e) {
 		console.log(e.data);
 		write_div(e.data, '#rtcheckcalls');
-		parse_call(e.data)
+		var data = JSON.parse(e.data);
+		parse_call(data)
 	}, false);
 
 	source.addEventListener('open', function(e) {

@@ -6,8 +6,8 @@ from datetime import datetime
 import md5
 
 from obelisk.config import config
-from obelisk.asterisk.users import parse_users
 from obelisk.model import Model, WebSession, User
+from obelisk.asterisk.model import SipPeer
 
 resource = None
 
@@ -26,25 +26,28 @@ class LoginResource(Resource):
 	return self.login(login, password, request)
 
     def check_password_ext(self, user_ext, password):
-	users, passwords = parse_users("/etc/asterisk/sip.conf")
-	username = users[user_ext]
-	return self.check_password(username, password, users, passwords)
+	return self.check_password(None, password, user_ext)
 
-    def check_password(self, username, password, users=None, passwords=None):
-	if not users or not passwords:
-		users, passwords = parse_users("/etc/asterisk/sip.conf")
-	user_input = md5.new(username + ":asterisk:" + password).hexdigest()
-	if username in passwords and user_input == passwords[username]:
-		ext = ""
-		for user_ext in users:
-			if users[user_ext] == username:
-				ext = user_ext
-		return ext
+    def check_password(self, username, password, user_ext=None):
+	model = Model()
+	peer = None
+	if user_ext:
+		peer = model.query(SipPeer).filter_by(regexten=user_ext).first()
+	else:
+		peer = model.query(SipPeer).filter_by(name=username).first()
+	if peer:
+		user_input = md5.new(username + ":asterisk:" + password).hexdigest()
+		hashed = peer.md5secret
+		if peer.secret and not hashed:
+			hashed = md5.new(username + ":asterisk:" + peer.secret).hexdigest()
+		if hashed == user_input:
+			return peer
 	return False
 
     def login(self, login, password, request, email=''):
-	user_ext = self.check_password(login, password)
-	if user_ext:
+	peer = self.check_password(login, password)
+	if peer:
+		user_ext = peer.regexten
 		model = Model()
 		user = model.get_user_fromext(user_ext)
 		if not user:

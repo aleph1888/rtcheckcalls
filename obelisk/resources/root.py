@@ -20,6 +20,9 @@ from obelisk.resources.changepass import ChangePassResource
 from obelisk.templates import print_template
 from obelisk.pricechecker import get_winners
 
+from obelisk.rtcheckcalls import CallManager
+from obelisk.asterisk import ami
+
 from obelisk.testchannels import TestChannels
 from obelisk.resources import sse
 
@@ -28,6 +31,9 @@ from obelisk import session
 class RootResource(Resource):
     def __init__(self):
         Resource.__init__(self)
+	ami.connect()
+	self.call_manager = CallManager()
+	ami.connector.registerEvent('CEL', self.call_manager.on_event)
         self.putChild("voip", PeersResource())
         self.putChild("prices", PricesResource())
         self.putChild("user", UserResource())

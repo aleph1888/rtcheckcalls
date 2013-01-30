@@ -4,11 +4,16 @@ from decimal import Decimal
 import math
 import traceback
 import random
+import time
+
+def parse_time(formatted_time):
+	return time.mktime(time.strptime(formatted_time, "%Y-%m-%d %H:%M:%S"))
 
 from obelisk.accounting import accounting
 from obelisk.resources import sse
 from obelisk import calls
-from obelisk.model import Model
+from obelisk.model import Model, User
+from obelisk.asterisk.model import SipPeer
 
 filename = "/var/log/asterisk/cel-custom/Master.csv"
 
@@ -36,36 +41,48 @@ class CallMonitor(object):
 		    self._cost = Decimal(0.0)
 	    self._from = app_from
 	    self._to = app_to
+	    self._real_to = app_to
 	    model = Model()
-	    self._user = model.get_user_fromext(self._from)
+	    peer = model.query(SipPeer).filter_by(regexten=self._from).first()
+	    if peer:
+		self._from = peer.name
+		self._user = model.query(User).filter_by(voip_id=peer.regexten).first()
+		self._from_exten = peer.regexten
+	    else:
+		self._user = None
+		self._from_exten = ''
     def log(self, text):
 	    notify_sse(text, 'callmonitor', self._user)
 	    print text
-    def on_app_start(self, args):
+    def on_app_start(self, event):
 	    self._starttime = 0
-            provider = args[10].split("/")
+            provider = event['appdata'].split("/")
 	    if len(provider) > 2:
 		provider = provider[1]
+	    elif "@" in provider[1]:
+		dest = provider[1].split(",")[0]
+		provider = 'sip'
+		self._real_to = dest
 	    else:
 		provider = 'direct'
             self._provider = provider
-	    self.log("call from %s to %s with %s mana remaining (%s)" % (self._from, self._to, accounting.get_mana(self._from), self._provider))
+	    self.log("call from %s to %s with %s mana remaining (%s)" % (self._from, self._to, accounting.get_mana(self._from_exten), self._provider))
     def on_answer(self, args):
-	    if not args[3]:
+	    if not args['calleridani']:
 		    # no from
 		    return
-	    if args[6] in ['s-CONGESTION',  's-BUSY', 's-CHANUNAVAIL', 's-NOANSWER']:
+	    if args['exten'] in ['s-CONGESTION',  's-BUSY', 's-CHANUNAVAIL', 's-NOANSWER']: # 6
                 return False
-	    self.log("check %s answered %s on channel %s" % (args[3], args[5], args[8]))
-	    answer_to = args[5]
-	    if not answer_to and self._from == args[3]:
-		provider = args[10]
+	    self.log("check %s answered %s on channel %s" % (args['calleridani'], args['calleriddnid'], args['channel']))
+	    answer_to = args['calleriddnid']
+	    if not answer_to and self._from_exten == args['calleridani']:
+		provider = args['appdata']
 		parts = provider.split("/")
 		answer_to = parts[2].split(",")[0]
-	    if self._from == args[3] and answer_to in self._to:
-		    channel = args[8]
+	    if self._from_exten == args['calleridani'] and answer_to in self._to:
+		    channel = args['channel']
 		    self.log("%s answered on channel %s" % (self._from, channel))
-		    self._starttime = float(args[0])
+		    self._starttime = parse_time(args['eventtime'])
 		    self._channel = channel
 		    self.predict_cut()
 		    #reactor.callLater(10, self.cut_call, channel)
@@ -78,7 +95,7 @@ class CallMonitor(object):
 			return
 		    self.log("free call, will not be cut")
 		    return
-	    mana = accounting.get_mana(self._from)
+	    mana = accounting.get_mana(self._from_exten)
 	    if not mana or mana < 0.0:
 		    self.cut_call(self._channel, "not enough credit for call")
 	    else:
@@ -93,24 +110,26 @@ class CallMonitor(object):
 		    self.log("CUTTING CALL")
             print self.run_asterisk_cmd("channel request hangup %s" % (channel))
     def on_chan_start(self, args):
-	    channel = args[8]
+	    channel = args['channel']
 	    # precut call if user can't pay it
-	    mana = float(accounting.get_mana(self._from))
-	    if self._cost and (not mana or mana < 0.0):
+	    mana = float(accounting.get_mana(self._from_exten))
+	    if self._cost and (not mana or mana < self._cost):
 		    self.cut_call(channel, "not enough credit")
     def on_hangup(self, args):
 	    if self._callID:
 		    self._callID.cancel()
 		    self._callID = 0
-	    endtime = float(args[0])
+	    # convert time
+	    endtime = parse_time(args['eventtime'])
 	    if self._starttime:
 	    	    totaltime = endtime - self._starttime
 		    self.apply_costs(totaltime)
 		    self.log("call end %.1f seconds at %s per minute" % (totaltime, self._cost))
             else:
 		    self.log("unsuccesfull call")
+
     def apply_costs(self, totaltime):
-	    if self._from in accounting.get_data():
+	    if self._from_exten:
 		    # round up to closest second
 		    totaltime = math.ceil(totaltime)
 		    # round up to closest minute
@@ -124,8 +143,8 @@ class CallMonitor(object):
 		    if self._cost:
 			    totalcost += Decimal('0.001')
 		            # save accounting data
-		    	    accounting.remove_credit(self._from, totalcost)
-                    calls.add_call(self._from, self._to, self._starttime, totaltime, roundedtime, totalcost, self._cost, self._provider)
+		    	    accounting.remove_credit(self._from_exten, totalcost)
+                    calls.add_call(self._from_exten, self._real_to, self._starttime, totaltime, roundedtime, totalcost, self._cost, self._provider)
 
     def run_asterisk_cmd(self, cmd):
 	    return self.run_command(['/usr/sbin/asterisk', '-nrx', cmd])
@@ -142,68 +161,67 @@ class CallManager(object):
 	self._commands["APP_START"] = self.on_app_start
 	self._commands["CHAN_END"] = self.on_chan_end
 	self._commands["ANSWER"] = self.on_answer
-	self._commands["BRIDGE_START"] = self.on_bridge_start
-	self._commands["BRIDGE_END"] = self.on_bridge_end
+	#self._commands["BRIDGE_START"] = self.on_bridge_start
+	#self._commands["BRIDGE_END"] = self.on_bridge_end
 	self._calls = {}
+
     def write(self, text):
-	#print text
+	print text
 	pass
-    def on_text(self, text):
-	notify_sse(text)
-	parts = text.split(",")
-	parts = map(lambda s: s.strip('"'), parts)
-	command = parts[0]
-	id = parts[-7]
+
+    def on_event(self, event):
+	command = event['eventname']
 	if command in self._commands:
             try:
-	        res = self._commands[command](parts[1:])
+	        res = self._commands[command](event)
 	    except:
-		print "ERROR on line", text
+		print "ERROR on event", event
 		traceback.print_exc()
 	else:
-	    self.write("? " + command + " " + str(parts[1:]))
+	    self.write("? " + command + " " + str(event))
+
     def on_chan_start(self, args):
-	    app_uniqid = args[14]
+	    app_uniqid = args['uniqueid']
 	    if app_uniqid in self._calls:
 		    self._calls[app_uniqid].on_chan_start(args)
-	    self.write("chan start: " +  str(args) + " " + str(args[14]))
+	    self.write("chan start: " +  str(args) + " " + str(args['uniqueid']))
+
     def on_app_start(self, args):
-	    app_from = args[3]
-	    app_to = args[5]
+	    app_from = args['calleridani'] # 3
+	    app_to = args['calleriddnid'] # 5
 	    if not app_to:
-		provider = args[10]
+		provider = args['appdata'] # 10
 		parts = provider.split("/")
 		if len(parts) > 2:
 			app_to = parts[2].split(",")[0]
-	    app_uniqid = args[15]
-	    app_cost = args[-7]
-	    self.write("app start: " + app_from + " " + app_to + " " + str(args[14]) + " " + str(args))
+	    app_uniqid = args['linkedid']
+	    app_cost = args['accountcode']
+	    self.write("app start: " + app_from + " " + app_to + " " + str(args['linkedid']) + " " + str(args))
 	    if not app_uniqid in self._calls:
 		    self._calls[app_uniqid] = CallMonitor(app_uniqid, app_cost, app_from, app_to)
 		    self._calls[app_uniqid].on_app_start(args)
+
     def on_chan_end(self, args):
-	    self.write("chan end: " +  str(args) + " " + str(args[14]))
+	    self.write("chan end: " +  str(args) + " " + str(args['uniqueid']))
+
     def on_hangup(self, args):
 	    #print "HANGUP", args
-	    if not args[3]:
+	    if not args['calleridani']:
 		return
-	    app_uniqid = args[13]
+	    app_uniqid = args['uniqueid']
 	    if app_uniqid in self._calls:
 		    self._calls[app_uniqid].on_hangup(args)
 		    del self._calls[app_uniqid]
-	    self.write("hangup: " + " " + str(args) + " " + str(args[14]))
+	    self.write("hangup: " + " " + str(args) + " " + str(args['uniqueid']))
+
     def on_answer(self, args):
-	    app_uniqid = args[14]
+	    app_uniqid = args['linkedid']
 	    if app_uniqid in self._calls:
 		    res = self._calls[app_uniqid].on_answer(args)
 		    if res == False:
 			print "deleting from congestion"
 			del self._calls[app_uniqid]
-	    self.write("answer: " + str(args) + " " + args[14])
-    def on_bridge_start(self, args):
-	    self.write("bridge start: " +  str(args) + " " + str(args[14]))
-    def on_bridge_end(self, args):
-	    self.write("bridge end: " +  str(args) + " " + str(args[14]))
+	    self.write("answer: " + str(args) + " " + args['uniqueid'])
 
 if __name__ == '__main__':
 	from tail import tail

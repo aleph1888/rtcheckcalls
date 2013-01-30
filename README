@@ -15,6 +15,9 @@ the script will create the tables by itself on connection.
 
 3. Then adapt and run run.sh script to enjoy!
 
+Dependencies:
+-----------------------
+python-sqlalchemy python-mysqldb
 
 Usage
 -----------------------

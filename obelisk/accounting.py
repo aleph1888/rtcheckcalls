@@ -5,6 +5,7 @@ from decimal import Decimal
 from obelisk import charges
 from obelisk.model import Model, User
 from obelisk.resources import sse
+from obelisk.asterisk.model import SipPeer
 
 class Accounting(object):
 	def __init__(self):
@@ -34,6 +35,10 @@ class Accounting(object):
 			return
 		user = self.model.get_user_fromext(user_ext)
 		if not user:
+			# check at least user exists as asterisk user
+			peer = self.model.query(SipPeer).filter_by(regexten=user_ext).first()
+			if not peer:
+				return
 			user = User(user_ext)
 			self.model.session.add(user)
 		logged.credit -= Decimal(credit)
@@ -41,8 +46,8 @@ class Accounting(object):
 		self.model.session.commit()
 		charges.add_charge(user_ext, credit, 'transferencia de ' + logged.voip_id)
 		charges.add_charge(logged.voip_id, -credit, 'transferencia a ' + user_ext)
-		sse.resource.notify({'credit':float(user.credit), 'user':user.voip_id}, "credit", user)
-		sse.resource.notify({'credit':float(logged.credit), 'user':logged.voip_id}, "credit", logged)
+		sse.resource.notify({'credit': float(user.credit), 'user': user.voip_id}, "credit", user)
+		sse.resource.notify({'credit': float(logged.credit), 'user': logged.voip_id}, "credit", logged)
 	
 	def add_credit(self, user_ext, credit):
 		user = self.model.get_user_fromext(user_ext)

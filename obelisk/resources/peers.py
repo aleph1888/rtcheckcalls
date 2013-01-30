@@ -8,6 +8,9 @@ from obelisk import session
 from obelisk.templates import print_template
 
 from obelisk.resources import sse
+from obelisk.asterisk import ami
+from obelisk.model import Model
+from obelisk.asterisk.model import SipPeer
 
 resource = None
 
@@ -17,12 +20,25 @@ class PeersResource(Resource):
 	Resource.__init__(self)
 	resource = self
 	self._peers = self.get_peers()
+	ami.connector.registerEvent('PeerStatus', self.on_peer_event)
 	reactor.callLater(10, self.get_peers_loop)
     def add_ip_href(self, line):
 	ip_start = line.find("192.168.")
 	ip_end = line.find(" ", ip_start)
 	ip = line[ip_start:ip_end]
 	return line.replace(ip, "<a href='http://"+ip+"'>"+ip+"</a>")
+    def on_peer_event(self, event):
+	peer_name = event['peer'].split('/')[1]
+	model = Model()
+	peer = model.query(SipPeer).filter_by(name=peer_name).first()
+	if peer:
+		event['username'] = peer_name
+		event['exten'] = peer.regexten
+		event['channel'] = False
+		sse.resource.notify(event, 'peer' ,'all')
+	else:
+		sse.resource.notify(event, 'peer' ,'all')
+		event['channel'] = True
     def get_extension(self, line, dialplan):
 	try:
 	    name = line.split(" ", 1)[0].split("/")[0]
@@ -40,7 +56,7 @@ class PeersResource(Resource):
 	sse.resource.notify(peers, 'peers' ,'all')
 	reactor.callLater(5, self.get_peers_loop)
     def get_peers(self):
-	dialplan = self.run_asterisk_cmd('dialplan show').split("\n")
+	model = Model()
 	output = self.run_asterisk_cmd('sip show peers')
 	lines = output.split("\n")
 	res = ""
@@ -48,31 +64,34 @@ class PeersResource(Resource):
 		     "channels": [],
 		     "end": []}
 	for line in lines[1:]:
-		ext = self.get_extension(line, dialplan)
-		if "OK" in line and ext: # and "192.168." in line:
+		line = line.replace("D   N", "")
+		line = line.replace(" N ", "")
+		line = line.replace(" a ", "")
+		line = line.replace("Cached RT", "")
+		parts = line.split()
+		parts = map(lambda s: s.strip("()"), parts)
+		if len(parts) > 8 or len(parts) <= 3 :
+			continue
+		peer_name = parts[0].split("/")[0]
+		ext = None
+		port = parts[2].strip()
+		peer = model.query(SipPeer).filter_by(name=peer_name).first()
+		if peer:
+			ext = peer.regexten
+		if ext: # and "192.168." in line:
 			# line = self.add_ip_href(line)
-			dest = 'local'
-		elif ext:
 			dest = 'local'
 		else:
 			dest = 'channels'
-		line = line.replace("D   N", "")
-		line = line.replace(" N ", "")
-		parts = line.split()
-		parts = map(lambda s: s.strip("()"), parts)
-		if len(parts) > 8:
-			continue
-		elif len(parts) > 4:
-			peer_name = parts[0].split("/")[0]
+		if len(parts) > 4 and not port == '0':
 			# connected
 			if dest == 'channels':
 				output = [peer_name, parts[3], parts[4]]
 			else:
 				output = [peer_name, ext, parts[3], parts[4]]
 		elif len(parts) > 3:
-			peer_name = parts[0].split("/")[0]
 			if dest == 'channels':
-				output = [peer_name, parts[3]]
+					output = [peer_name, parts[3]]
 			else:
 				output = [peer_name, ext, parts[3]]
 		else:
@@ -84,7 +103,7 @@ class PeersResource(Resource):
 	user = session.get_user(request)
 	if not user:
 		return redirectTo("/", request)
-	dialplan = self.run_asterisk_cmd('dialplan show').split("\n")
+	model = Model()
 	output = self.run_asterisk_cmd('sip show peers')
 	lines = output.split("\n")
 	res = ""
@@ -92,7 +111,20 @@ class PeersResource(Resource):
 		     "channels": "<tr><th>Nombre</th><th>Estado</th><th>Latencia</th><tr>\n",
 		     "end": "<tr><th>Nombre</th><th>Ext</th><th>Estado</th><th>Latencia</th><tr>\n"}
 	for line in lines[1:]:
-		ext = self.get_extension(line, dialplan)
+		line = line.replace("D   N", "")
+		line = line.replace(" N ", "")
+		line = line.replace(" a ", "")
+		line = line.replace("Cached RT", "")
+		parts = line.split()
+		parts = map(lambda s: s.strip("()"), parts)
+		if len(parts) > 8 or len(parts) <= 3 :
+			continue
+		peer_name = parts[0].split("/")[0]
+		ext = None
+		peer = model.query(SipPeer).filter_by(name=peer_name).first()
+		if peer:
+			ext = peer.regexten
+
 		if "OK" in line and ext: # and "192.168." in line:
 			# line = self.add_ip_href(line)
 			dest = 'local'
@@ -100,21 +132,13 @@ class PeersResource(Resource):
 			dest = 'end'
 		else:
 			dest = 'channels'
-		line = line.replace("D   N", "")
-		line = line.replace(" N ", "")
-		parts = line.split()
-		parts = map(lambda s: s.strip("()"), parts)
-		if len(parts) > 8:
-			continue
-		elif len(parts) > 4:
-			peer_name = parts[0].split("/")[0]
+		if len(parts) > 4:
 			# connected
 			if dest == 'channels':
 				output = "<tr><td>%s</td><td>%s</td><td>%sms</td><tr>" % (peer_name, parts[3], parts[4])
 			else:
 				output = "<tr><td>%s</td><td>%s</td><td>%s</td><td>%sms</td><tr>" % (peer_name, ext, parts[3], parts[4])
 		elif len(parts) > 3:
-			peer_name = parts[0].split("/")[0]
 			if dest == 'channels':
 				output = "<tr><td>%s</td><td>%s</td><td></td>" % (peer_name, parts[3])
 			else:

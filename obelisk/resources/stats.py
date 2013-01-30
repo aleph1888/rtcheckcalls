@@ -10,7 +10,6 @@ import math
 from decimal import Decimal
 
 from obelisk.config import config
-from obelisk.asterisk.users import parse_users
 from obelisk.model import Model, WebSession, User, Call, Charge
 from obelisk.templates import print_template
 

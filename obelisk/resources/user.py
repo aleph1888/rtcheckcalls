@@ -12,6 +12,7 @@ from obelisk import calls
 from obelisk import session
 
 from obelisk.model import Model
+from obelisk.asterisk.model import SipPeer
 
 from obelisk.templates import print_template
 
@@ -20,23 +21,6 @@ class UserResource(Resource):
 	print "INIT ACCOUNT RESOURCE"
 	Resource.__init__(self)
 	self._accounting = accounting
-    def add_ip_href(self, line):
-	ip_start = line.find("192.168.")
-	ip_end = line.find(" ", ip_start)
-	ip = line[ip_start:ip_end]
-	return line.replace(ip, "<a href='http://"+ip+"'>"+ip+"</a>")
-    def get_extension(self, line, dialplan):
-	try:
-	    name = line.split(" ", 1)[0].split("/")[1]
-	except:
-	    return ""
-	coded_name = "SIP/"+name+")"
-	try:
-	    dialplan_line = filter(lambda s: coded_name in s, dialplan)[0]
-	except:
-	    return ""
-	ext_start = dialplan_line.find("'")
-	return dialplan_line[ext_start+1: dialplan_line.find("'", ext_start+1)]
 
     def render_GET(self, request):
         args = {}
@@ -69,7 +53,7 @@ class UserResource(Resource):
 		return redirectTo("/", request)
 	data = self._accounting.get_data()
 	total_credit = Decimal()
-	users, _ = parse_users("/etc/asterisk/sip.conf")
+	users = parse_users()
 	for ext, credit in data.items():
 		username = "unknown"
 		if ext in users:
@@ -81,10 +65,10 @@ class UserResource(Resource):
 
     def render_user(self, user_ext, request):
 	model = Model()
-	users, _ = parse_users("/etc/asterisk/sip.conf")
+	peer = model.query(SipPeer).filter_by(regexten=user_ext).first()
 	creditlink = ''
-	if user_ext in users:
-		username = users[user_ext]
+	if peer:
+		username = peer.name
 	else:
 		username = user_ext
 	user = model.get_user_fromext(user_ext)
@@ -108,15 +92,23 @@ class UserResource(Resource):
 	all_calls = self.render_user_calls(user_ext, request)
 	args = {'ext': user_ext, 'username': username, 'credit': credit, 'credit_link':creditlink ,'calls': user_calls, 'charges': user_charges, 'all_calls': all_calls}
 	return print_template('user-pbx-lorea', args)
+
     def render_user_calls(self, user_ext, request):
 	FILE = "/var/log/asterisk/cdr-csv/Master.csv"
 	f = open(FILE)
 	csv_file = csv.reader(f)
 	data = list(csv_file)
 	logged = session.get_user(request)
+	model = Model()
+	peer = model.query(SipPeer).filter_by(regexten=user_ext).first()
+	user_extensions = [user_ext]
+	if peer:
+		user_extensions.append(peer.name)
 	res = ""
 	calls = ""
 	for a in data:
+		if 'queue-multicall' in a:
+			continue
 		time_1 = a[9]
 		time_2 = a[10]
 		time_3 = a[11]
@@ -124,21 +116,28 @@ class UserResource(Resource):
 		billsecs = int(a[13])
 		from_ext = a[1]
 		from_name = a[4]
+		appdata = a[8]
 		status = a[-4]
 		id = a[-2]
 		delta = 0.0
 		#totalsecs += int(billsecs)
 		t1 = datetime.strptime(time_1, "%Y-%m-%d %H:%M:%S")
 		to_ext = a[2]
+		if to_ext.startswith("stdexten-"):
+			status = to_ext.split("-")[1]
+			to_ext = a[8].split("@")[0]
+		if "@" in appdata and "/" in appdata:
+			dest = appdata.split("/")[1].split(",")[0]
+			to_ext = dest
 		if time_3:
 			t2 = datetime.strptime(time_3, "%Y-%m-%d %H:%M:%S")
 			delta = t2-t1
-		if from_ext == user_ext or to_ext == user_ext:
+		if from_ext in user_extensions or to_ext in user_extensions:
 			#calls = "<p>[%s] %s to %s for %s secs on %s/%s/%s %s</p>" % (id, from_ext, to_ext, delta, t1.day, t1.month, t1.year, status) + calls
 			date = "%s/%s/%s" % (t1.day, t1.month, t1.year)
-			if not from_ext == user_ext and logged.admin:
+			if not from_ext in user_extensions and logged.admin:
 				from_ext = "<a href='/user/%s'>%s</a>" % (from_ext, from_ext)
-			if not to_ext == user_ext and logged.admin:
+			if not to_ext in user_extensions and logged.admin:
 				to_ext = "<a href='/user/%s'>%s</a>" % (to_ext, to_ext)
 			calls = ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" % (date, from_ext, to_ext, delta, status)) + calls
 

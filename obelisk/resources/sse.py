@@ -9,10 +9,10 @@ import time
 import json
 
 from obelisk.config import config
-from obelisk.asterisk.users import parse_users
 from obelisk.model import Model, WebSession, User
 from obelisk.session import get_session, get_user, get_user_sessions
 import obelisk.resources.peers
+from obelisk.asterisk import ami
 
 resource = None
 
@@ -44,6 +44,10 @@ class SSEResource(Resource):
 	resource = self
 	Resource.__init__(self)
 	self._connections = {}
+	ami.connector.registerEvent('CEL', self.onCelEvent)
+
+    def onCelEvent(self, event):
+	self.notify(event, 'rtcheckcalls', 'all')
 
     def getChild(self, name, request):
         return self
