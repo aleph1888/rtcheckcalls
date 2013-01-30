@@ -1,4 +1,4 @@
 #! /bin/bash
 cd /home/caedes/rtcheckcalls/
 export PYTHONPATH=/home/caedes/rtcheckcalls/
-twistd -ny main.tac
+python2.7 /usr/bin/twistd -ny main.tac
