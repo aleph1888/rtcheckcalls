@@ -2,27 +2,54 @@ rtcheckcalls
 -----------------------
 
 Python daemon to control billing for asterisk in a simple way.
+Designed to be small and easy to adapt.
+
+Features:
+  - Small footprint
+  - User management (self registration and user pages)
+  - Credit management (create, transfer)
+  - Statistics (minutes, credit usage, charges)
+  - Real time visualization of peers and calls
 
 Running
-1. First create config.json file with the following contents:
+1. Install dependencies and configure asterisk (see below)
 
-{"user": "db_user", "password": "your_password", "database": "db_name", "secret": "user_secret", "logo": "your_site_name"}
+2. Create config.json file (into the root folder of the application) with the following contents:
+
+{"user": "db_user", "password": "db_password", "database": "db_name", "secret": "arbitrary_site_secret", "logo": "site name", "ami": {"user": "ami_user_name", "password": "ami_password"}
 
 User, password and database (and optionally host) are credentials for your mysql database. The database and user must already exist, but
 the script will create the tables by itself on connection.
+Ami user and password refer to the asterisk manager interface credentials, you need to configure them in /etc/asterisk/manager.conf.
 
-2. Adapt paths on root_resource.py
+3. Install db:
+   mysql -u root -p db_name < sql/schema/sippeers2.sql
+   mysql -u root -p db_name < sql/schema/extensions.sql
+   mysql -u root -p db_name < sql/schema/voicemail.sql
+   mysql -u root -p db_name < sql/schema/voicemail_data.sql
+   mysql -u root -p db_name < sql/schema/voicemail_extensions.sql
 
-3. Then adapt and run run.sh script to enjoy!
+This will create the needed asterisk real time tables. Obelisk will create the rest of its tables when running for the first time (the user will need table creation privileges at least at first run).
+
+4. Then adapt and run run.sh script to enjoy!
+
+5. Make your 1st user admin on the db directly (update users set admin=1 where id=1;).
 
 Dependencies:
 -----------------------
-python-sqlalchemy python-mysqldb
+python-sqlalchemy python-mysqldb python-starpy python-incf
+
+you can place modules not available in the system into the lib/ folder (at the time
+of this writing incf was not available on debian wheezy which was the development system)
 
 Usage
 -----------------------
 
-Provides the following urls:
+Run it through the run.sh script as explained before, and then browse to localhost:8010 to
+see your main site. You will need to create a first user and make it admin on the db on your
+own for now :-P.
+
+some other urls the site provide:
 
 localhost:8081/ - main page
 localhost:8081/voip - extensions info and server stats
@@ -30,15 +57,32 @@ localhost:8081/prices - prices
 localhost:8081/user/<ext> - user info including credit
 localhost:8081/user/addcredit/<ext>/<credit> - add credit for a user
 
-and new ones.
-
-you just need the main page anyways.
+there are many more but you need to explore it from the webpage itself.
 
 
 Asterisk configuration
 -----------------------
 
-You need to enable cdr-custom and cel-custom logging in your asterisk (1.8).
+1. You need to enable cdr-custom logging in your asterisk (cdr_custom.conf)
+2. Activate ami cel logging (cel.conf)
+3. Activate real time users, extensions and voicemail
+
+These steps are just a minimum to enable user management and call logging and
+charging. To have a server with all features requires some more work, we will
+provide some example asterisk config files soon.
+
+Main files
+-----------------------
+
+The daemon uses the following structure:
+    - run.sh: helper script to start obelisk
+    - main.tac: twistd instructions script (the real program)
+    - obelisk/: python module with server functionality
+    - sql/: sql schemas and test data
+    - templates/: html and javascript code for the client part
+    - data/: application data cache (mainly prices from providers and related calculations)
+    - lib/: python dependencies
+    
 
 -----
 
