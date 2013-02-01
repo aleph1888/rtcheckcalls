@@ -34,8 +34,9 @@ class PeersResource(Resource):
 	if peer:
 		event['username'] = peer_name
 		event['exten'] = peer.regexten
+		event['useragent'] = peer.useragent
 		event['channel'] = False
-		if 'transport=TLS' in peer.fullcontact:
+		if peer.fullcontact and 'transport=TLS' in peer.fullcontact:
 			event['tls'] = True
 		else:
 			event['tls'] = False
@@ -91,11 +92,12 @@ class PeersResource(Resource):
 		if ext: # and "192.168." in line:
 			# line = self.add_ip_href(line)
 			dest = 'local'
+			output['useragent'] = peer.useragent
 			if peer.encryption == 'yes':
 				output['srtp'] = True
 			else:
 				output['srtp'] = False
-			if 'transport=TLS' in peer.fullcontact:
+			if peer.fullcontact and 'transport=TLS' in peer.fullcontact:
 				output['tls'] = True
 			else:
 				output['tls'] = False

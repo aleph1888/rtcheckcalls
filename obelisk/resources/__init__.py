@@ -1,0 +1,3 @@
+"""
+Application Http Resources
+"""

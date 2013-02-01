@@ -1,3 +1,11 @@
+"""
+SSE Resource.
+
+Handles a Server Side Events javascript connection and
+allows other parts of the application to send real time
+updates through sse.
+"""
+
 from twisted.internet.task import deferLater
 from twisted.internet import reactor
 from twisted.web.resource import Resource
@@ -19,18 +27,47 @@ resource = None
 class SSEConnection(object):
     def __init__(self, request):
 	self.request = request
+	tcpok = True
+	try:
+		request.transport.setTcpNoDelay(True)
+		request.transport.setTcpKeepAlive(True)
+	except:
+		# the transport can err if the client is not there any more,
+		# don't do anything else if that happens
+		tcpok = False
+
+	# get user session
 	self.session = get_session(request)
 	self.user = get_user(request)
-	request.transport.setTcpNoDelay(True)
-	request.transport.setTcpKeepAlive(True)
+
+	# send protocol header and starting data
+	if tcpok:
+		self.send_header(request)
+		# no user, no data for now...
+		if self.user:
+			self.write(time.time(), json.dumps({'user': self.user.voip_id, 'credit':float(self.user.credit)}), 'credit')
+			self.write(time.time(), obelisk.resources.peers.resource.get_peers(), 'peers')
+
+    def send_header(self, request):
+	"""
+	Sets sse headers on a request
+
+	request -- twisted python request
+	"""
 	request.setHeader('Content-Type', 'text/event-stream')
 	request.setHeader('Cache-Control', 'no-cache')
 	request.setHeader('Connection', 'keep-alive')
-	if self.user:
-		self.write(time.time(), json.dumps({'user': self.user.voip_id, 'credit':float(self.user.credit)}), 'credit')
-	self.write(time.time(), obelisk.resources.peers.resource.get_peers(), 'peers')
 
     def write(self, id, msg, section):
+	"""
+	Send a custom sse event.
+
+	id -- message id
+	msg -- data to send, if string, will be sent as is, if other type of
+	       object it will be converted to json before sending (must be 
+	       serializable to json).
+	section -- event name
+	"""
 	self.request.write("id: %s\n" % (id,))
 	self.request.write("event: %s\n" % (section,))
 	if msg.__class__ == str:
@@ -47,12 +84,30 @@ class SSEResource(Resource):
 	ami.connector.registerEvent('CEL', self.onCelEvent)
 
     def onCelEvent(self, event):
+	"""
+	A cel event has arrived, notify clients.
+
+	event -- event data (dict)
+	"""
 	self.notify(event, 'rtcheckcalls', 'all')
 
     def getChild(self, name, request):
+	"""
+	Return resource children.
+
+	name    -- resource name (str)
+	request -- twisted python request
+	"""
         return self
 
     def notify(self, value, section, user):
+	"""
+	Notify given data event to a user or all users.
+
+	value   -- message payload (string or json serializable object).
+	section -- event name.
+	user    -- user this event is related to.
+	"""
 	sessions = []
 	if user == 'all':
 		sessions = 'all'
@@ -62,6 +117,13 @@ class SSEResource(Resource):
 	self.notifyChildren(value, section, sessions)
 
     def notifyChildren(self, value, section='message', sessions=[]):
+	"""
+	Notify all children of given sessions of some event with data.
+
+	value    -- message payload (string or json serializable object).
+	section  -- event name.
+	sessions -- sessions to send to.
+	"""
 	model = Model()
 	for req in self._connections.keys():
 		if req._disconnected:
@@ -78,13 +140,19 @@ class SSEResource(Resource):
 					conn.write(time.time(), json.dumps(value), section)
 
     def _delayedRender(self, request):
-	if request in self._connections:
-		conn = self._connections[request]
-	else:
+	"""
+	Create the sse connection for the request.
+	"""
+	if not request in self._connections:
 		conn = SSEConnection(request)
 		self._connections[request] = conn
 
     def render_GET(self, request):
+	"""
+	Get response to leave the connection open.
+
+	request -- twisted python request
+	"""
 	logged = get_user(request)
 	if True or (logged and logged.admin):
 		d = deferLater(reactor, 1, lambda: request)

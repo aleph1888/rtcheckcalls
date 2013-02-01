@@ -66,7 +66,7 @@ class SipPeer(Base):
 	ipaddr = Column(String(15))
 	port = Column(Integer(5))
 	regseconds = Column(Integer(11))
-	useragent = Column(String(20))
+	useragent = Column(String(128))
 	lastms = Column(Integer(11))
 	host = Column(String(40))
 	type = Column(Enum('friend', 'peer', 'user'))

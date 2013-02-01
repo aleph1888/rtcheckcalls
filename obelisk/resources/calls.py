@@ -1,3 +1,7 @@
+"""
+CallsResource - Formats calls into json
+"""
+
 from twisted.web.resource import Resource
 from twisted.web.util import redirectTo
 
@@ -19,10 +23,20 @@ class CallsResource(Resource):
     def __init__(self):
 	Resource.__init__(self)
     def format_date(self, dt):
+	"""
+	Format a datetime object into timeline format.
+
+	dt -- datetime object
+	"""
 	dt = time.strftime("%Y-%m-%d %H:%M:%SZ", dt.timetuple())
 	return dt
 
     def get_provider_name(self, provider):
+	"""
+	Format the provider name.
+
+	provider -- obelisk.model.Provider object
+	"""
 	if provider and provider.name and not provider.name == 'blah':
 		name = provider.name
 	else:
@@ -30,6 +44,11 @@ class CallsResource(Resource):
 	return name
 
     def get_color(self, provider):
+	"""
+	Get selected color for the given provider.
+
+	provider -- obelisk.model.Provider object
+	"""
 	name = self.get_provider_name(provider)
 	if not name in providers_colors:
 		n = len(providers_colors)
@@ -37,9 +56,20 @@ class CallsResource(Resource):
 	return colors[providers_colors[name]]
 
     def getChild(self, name, request):
+	"""
+	Get resource child
+
+	name    -- child name (str)
+	request -- twisted python request
+	"""
         return self
 
     def render_GET(self, request):
+	"""
+	Get response on this resource
+
+	request -- twisted python request
+	"""
 	user = session.get_user(request)
 	if not user or not user.admin:
 		return redirectTo("/", request)
@@ -55,6 +85,11 @@ class CallsResource(Resource):
 	else:
 		return print_template('timeline', {})
     def render_all(self, user_ext=None):
+	"""
+	Render calls for the given extensions.
+
+	user_ext -- extension to render calls for.
+	"""
 	model = Model()
 	result = {}
 	result['dateTimeFormat'] = 'iso8601'

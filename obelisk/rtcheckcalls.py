@@ -117,7 +117,7 @@ class CallMonitor(object):
 	    channel = args['channel']
 	    # precut call if user can't pay it
 	    mana = float(accounting.get_mana(self._from_exten))
-	    if self._cost and (not mana or mana < self._cost)):
+	    if self._cost and (not mana or mana < self._cost):
 		    self.cut_call(channel, "not enough credit")
     def on_hangup(self, args):
 	    if self._callID:

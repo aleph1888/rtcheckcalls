@@ -19,6 +19,7 @@ from obelisk.resources.credit import CreditResource
 from obelisk.resources.register import RegisterResource
 from obelisk.resources.options import OptionsResource
 from obelisk.resources.changepass import ChangePassResource
+from obelisk.resources.docs import DocsResource
 from obelisk.templates import print_template
 from obelisk.pricechecker import get_winners
 
@@ -52,10 +53,12 @@ class RootResource(Resource):
         self.putChild("providers", ProvidersResource())
         self.putChild("login", LoginResource())
         self.putChild("logout", LogoutResource())
+        self.putChild("docs", DocsResource())
         self.putChild("icons", File("/usr/share/icons"))
         self.putChild("tpl", File(os.path.join(our_dir, "templates")))
         self.putChild("sip", File("/home/lluis/tst_sip_gui"))
         self.putChild("jssip", File("/home/caedes/jssip"))
+        self.putChild("favicon.ico", File(os.path.join(our_dir, "templates", "telephone_icon.ico")))
 	reactor.callLater(1, self.get_winners)
 	reactor.callLater(1, self.get_channel_test)
 	self.channel_tester = TestChannels()
@@ -76,6 +79,7 @@ class RootResource(Resource):
     def render_GET(self, request):
 
 	output = "<li><a href='/prices'>precios</a></li>"
+	output += "<li>tutos configuracion segura para <a href='/docs/csipsimple'>csipsimple</a> y <a href='/docs/sflphone'>sflphone</a> (tls y srtp)</a></li>"
 
 	user = session.get_user(request)
 	if user:

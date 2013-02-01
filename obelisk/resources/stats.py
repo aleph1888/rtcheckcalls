@@ -64,12 +64,22 @@ class StatsResource(Resource):
     def sum_minutes(self, calls):
 	free = 0
 	cost = 0
+	pln = 0
+	sip = 0
+	direct = 0
 	for call in calls:
-		if call.rate == 0:
+		dest = call.destination
+		if dest.isdigit() and len(dest) < 5 or dest.startswith('0000'):
+			pln += (math.ceil(call.duration/60.0))
+		elif dest.startswith('0000'):
+			pln += (math.ceil(call.duration/60.0))
+		elif '@' in dest:
+			pln += (math.ceil(call.duration/60.0))
+		elif call.rate == 0:
 			free += (math.ceil(call.duration/60.0))
 		else:
 			cost += (math.ceil(call.duration/60.0))
-	return int(cost), int(free)
+	return int(cost), int(free), int(pln)
 
     def sum_charges(self, charges):
 	credit = 0
