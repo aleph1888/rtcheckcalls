@@ -8,6 +8,7 @@ Features:
   - Small footprint
   - User management (self registration and user pages)
   - Credit management (create, transfer)
+  - Call billing
   - Statistics (minutes, credit usage, charges)
   - Real time visualization of peers and calls
 
