@@ -5,6 +5,34 @@ ICON_CLOUD = 'M24.345,13.904c0.019-0.195,0.03-0.392,0.03-0.591c0-3.452-2.798-6.2
 
 ICON_LOCK = Raphael.transformPath('M24.875,15.334v-4.876c0-4.894-3.981-8.875-8.875-8.875s-8.875,3.981-8.875,8.875v4.876H5.042v15.083h21.916V15.334H24.875zM10.625,10.458c0-2.964,2.411-5.375,5.375-5.375s5.375,2.411,5.375,5.375v4.876h-10.75V10.458zM18.272,26.956h-4.545l1.222-3.667c-0.782-0.389-1.324-1.188-1.324-2.119c0-1.312,1.063-2.375,2.375-2.375s2.375,1.062,2.375,2.375c0,0.932-0.542,1.73-1.324,2.119L18.272,26.956z', 's0.5,0.5t8,0')
 
+ICON_ANDROID = Raphael.transformPath('M6.13,11.126c-0.894,0-1.624,0.731-1.624,1.624v6.496c0,0.895,0.73,1.624,1.624,1.624c0.893,0,1.624-0.729,1.624-1.624V12.75C7.754,11.856,7.023,11.126,6.13,11.126zM19.516,4.96l1.32-2.035c0.074-0.113,0.042-0.264-0.07-0.338c-0.113-0.074-0.266-0.041-0.34,0.072l-1.367,2.106c-0.93-0.36-1.966-0.561-3.059-0.561c-1.094,0-2.13,0.201-3.058,0.561l-1.368-2.106c-0.073-0.113-0.225-0.145-0.338-0.072c-0.113,0.074-0.145,0.225-0.072,0.338l1.321,2.035c-2.186,1.009-3.674,2.928-3.717,5.138h14.464C23.189,7.888,21.702,5.969,19.516,4.96zM12.898,8.062c-0.459,0-0.832-0.373-0.832-0.832s0.373-0.832,0.832-0.832c0.46,0,0.832,0.373,0.832,0.832S13.358,8.062,12.898,8.062zM19.102,8.062c-0.459,0-0.832-0.373-0.832-0.832s0.373-0.832,0.832-0.832s0.832,0.373,0.832,0.832S19.561,8.062,19.102,8.062zM25.87,11.126c-0.894,0-1.624,0.731-1.624,1.624v6.496c0,0.895,0.73,1.624,1.624,1.624s1.624-0.729,1.624-1.624V12.75C27.494,11.856,26.764,11.126,25.87,11.126zM8.756,22.904c0,0.723,0.591,1.312,1.314,1.312h1.363v3.61c0,0.896,0.731,1.624,1.625,1.624c0.893,0,1.624-0.729,1.624-1.624v-3.611h2.636v3.61c0,0.896,0.729,1.624,1.625,1.624c0.894,0,1.623-0.729,1.623-1.624v-3.61h1.363c0.723,0,1.312-0.591,1.312-1.312V11.07H8.756V22.904z', 's0.35,0.35t-8,32')
+
+ICON_MOBILE = 'M20.755,1H10.62C9.484,1,8.562,1.921,8.562,3.058v24.385c0,1.136,0.921,2.058,2.058,2.058h10.135c1.136,0,2.058-0.922,2.058-2.058V3.058C22.812,1.921,21.891,1,20.755,1zM14.659,3.264h2.057c0.101,0,0.183,0.081,0.183,0.18c0,0.1-0.082,0.18-0.183,0.18h-2.057c-0.1,0-0.181-0.081-0.181-0.18C14.478,3.344,14.559,3.264,14.659,3.264zM13.225,3.058c0.199,0,0.359,0.162,0.359,0.36c0,0.198-0.161,0.36-0.359,0.36c-0.2,0-0.36-0.161-0.36-0.36S13.025,3.058,13.225,3.058zM15.688,28.473c-0.796,0-1.44-0.646-1.44-1.438c0-0.799,0.645-1.439,1.44-1.439s1.44,0.646,1.44,1.439S16.483,28.473,15.688,28.473zM22.041,24.355c0,0.17-0.139,0.309-0.309,0.309H9.642c-0.17,0-0.308-0.139-0.308-0.309V6.042c0-0.17,0.138-0.309,0.308-0.309h12.09c0.17,0,0.309,0.138,0.309,0.309V24.355z'
+ICON_MOBILE = Raphael.transformPath(ICON_MOBILE, 's0.35,0.35t-8,32')
+
+ICON_COMPUTER = 'M29.249,3.14h-9.188l-0.459,0.459v18.225l0.33,2.389H19.57v0.245h-0.307v-0.306h-0.611v0.244h-0.311v-0.367h-0.486v0.307h-1.104l-2.022-0.367v-0.92h0.858l0.302-1.47h2.728c0.188,0,0.339-0.152,0.339-0.339V7.828c0-0.187-0.149-0.338-0.339-0.338H1.591c-0.187,0-0.339,0.152-0.339,0.338V21.24c0,0.187,0.152,0.339,0.339,0.339h3.016l0.199,1.47h1.409l-3.4,3.4L2.11,27.951c0,0,2.941,1.102,6.678,1.102c3.737,0,9.679-0.857,10.476-0.857s4.84,0,4.84,0v-1.225l-0.137-1.068h1.744c-0.2,0.106-0.322,0.244-0.322,0.396v0.979c0,0.341,0.604,0.613,1.352,0.613c0.742,0,1.348-0.272,1.348-0.613v-0.979c0-0.339-0.604-0.611-1.348-0.611c-0.188,0-0.364,0.019-0.525,0.049v-0.17h-2.29l-0.055-0.432h5.382L29.249,3.14L29.249,3.14zM2.478,20.17V8.714h15.07V20.17H2.478z'
+ICON_COMPUTER = Raphael.transformPath(ICON_COMPUTER, 's0.35,0.35t-8,32')
+
+function Icon(path, fill, stroke, stroke_width) {
+	if (stroke_width == null) {
+		stroke_width = 1;
+	}
+	this.path_string = path
+	this.pos = [0,0]
+	this.path = paper.path(this.path_string).attr({fill: fill, stroke: stroke, 'stroke-width': stroke_width});
+}
+
+Icon.prototype.update = function(x, y) {
+	this.path.translate(-this.pos[0], -this.pos[1])
+	this.path.translate(x-16, y-24)
+	this.pos = [x-16, y-24]
+}
+Icon.prototype.remove = function() {
+	//this.path.translate(1000,1000)
+	this.path.remove()
+	this.path = null
+}
+
 // Raphael canvas
 var paper;
 
@@ -110,6 +138,9 @@ function elmt_tooltip(elmt, x, y, text, r2) {
 			if (circle.latency) {
 				text += "/" + circle.latency
 			}
+			if (circle.useragent) {
+				text += "\n\n" + circle.useragent
+			}
 			text_running=true;
 			floats["text"+text] = paper.text(x+10, y, text)
 						.attr({"font-size":16, fill: "#FFF"})
@@ -213,24 +244,26 @@ function update_channel(elmt, x, y, pos_rad) {
 		color = '#000'
 	
 
+	var args = {cx:x, cy:y};
 	if (!elmt.busy) {
-		if (elmt.state) {
-			elmt.animate({cx:x, cy:y, fill:color}, 1000);
-		}
-		else {
-			elmt.attr({cx:x, cy:y, fill:color});
-			elmt_tooltip(elmt, x+20, y, elmt.nick+"/"+elmt.name, r2=16)
-		}
-		elmt.x = x
-		elmt.y = y
-		if (elmt.new_state) {
-			var text = elmt.nick;
-			if (elmt.latency)
-				text += " " + elmt.latency;
-			floating_text(x, y, text, color)
-			elmt.state = elmt.new_state
-			elmt.new_state = false
-		}
+		args.fill = color;
+	}
+	if (elmt.state) {
+		elmt.animate(args, 1000);
+	}
+	else {
+		elmt.attr(args);
+		elmt_tooltip(elmt, x+20, y, elmt.nick+"/"+elmt.name, r2=16)
+	}
+	elmt.x = x
+	elmt.y = y
+	if (elmt.new_state) {
+		var text = elmt.nick;
+		if (elmt.latency)
+			text += " " + elmt.latency;
+		floating_text(x, y, text, color)
+		elmt.state = elmt.new_state
+		elmt.new_state = false
 	}
 }
 
@@ -265,24 +298,34 @@ function create_channel(channels, name, nick, latency, state, is_channel, size, 
 		if (!channels[name])
 			return;
 
+		if ('useragent' in pars)
+			channels[name].useragent = pars['useragent'];
 		if (channels[name].icon) {
-			channels[name].icon.translate(1000,1000)
 			channels[name].icon.remove()
 			channels[name].icon = null
 		}
 
+	/*	if (pars['useragent'] && !channels[name].devicon) {
+			if (pars['useragent'].search('Sipdroid') != -1 | pars['useragent'].search('CSipSimple') != -1) {
+				channels[name].devicon = new Icon(ICON_ANDROID, "#FFF", "#000");
+			}
+			else if (pars['useragent'].search('Twinkle') != -1) {
+				channels[name].devicon = new Icon(ICON_COMPUTER, "#FFF", "#000");
+			}
+		}*/
+
 		if (state == 'LAGGED') {
-			channels[name].icon = paper.path(ICON_CLOUD).attr({fill: "#000", stroke: "#FFF"});
-			channels[name].iconpos = [0,0]
+			channels[name].icon = new Icon(ICON_CLOUD, "#000", "#FFF");
 		}
 		if (pars && 'srtp' in pars) {
 			if (channels[name].lockicon) {
 				channels[name].lockicon.remove()
 				channels[name].lockicon = null
 			}
-			if (pars['srtp']) {
-				channels[name].lockicon = paper.path(ICON_LOCK).attr({fill: "#FFF", stroke: "#000"});
-				channels[name].lockiconpos = [0,0]
+			if (pars['srtp'] && pars['tls']) {
+				channels[name].lockicon = new Icon(ICON_LOCK, "#FF9", "#000", 0.6);
+			} else if (pars['srtp'] || pars['tls']) {
+				channels[name].lockicon = new Icon(ICON_LOCK, "#FFF", "#000", 0.5);
 			}
 		}
 }
@@ -301,14 +344,13 @@ function position_channels(channels, radius) {
 		// Animate position and style
 		update_channel(elmt, x, y, pos_rad);
 		if (elmt.icon) {
-			elmt.icon.translate(-elmt.iconpos[0], -elmt.iconpos[1])
-			elmt.icon.translate(x-16, y-24)
-			elmt.iconpos = [x-16, y-24]
+			elmt.icon.update(x, y)
 		}
 		if (elmt.lockicon) {
-			elmt.lockicon.translate(-elmt.lockiconpos[0], -elmt.lockiconpos[1])
-			elmt.lockicon.translate(x-16, y-24)
-			elmt.lockiconpos = [x-16, y-24]
+			elmt.lockicon.update(x, y)
+		}
+		if (elmt.devicon) {
+			elmt.devicon.update(x, y)
 		}
 
 	}

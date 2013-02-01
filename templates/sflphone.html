@@ -1,0 +1,42 @@
+<h2>SFLphone con TLS y SRTP</h2>
+
+<p>Para configurar este cliente debemos ir a crear una nueva cuenta.</p>
+
+<p><em>(Las partes en cursiva son las que debemos modificar con nuestros datos)</em></p>
+
+<h3>Parametros generales</h3>
+<p>Una vez ahi debemos rellenar los siguientes parametros (fig.1):</p>
+<li><b>Alias</b>: <em>Nombre arbitrario para la cuenta</em></li>
+<li><b>Protocolo</b>: SIP</li>
+<li><b>Nombre de equipo</b>: pbx.lorea.org</li>
+<li><b>Usuario</b>: <em>usuario en la centralita</em></li>
+<li><b>Contrasenya</b>: <em>contrasenya de la centralita</em></li>
+<li><b>Numero de buzon de voz</b>: *</li>
+
+fig.1:<br />
+<img src='/tpl/sflphone/rflphone-secure-1.png' /><br />
+
+<h3>Parametros de seguridad</h3>
+<p>Luego vamos a la seccion de seguridad (fig.2), ahi activamos las opciones <b>Use TLS</b> transport (sips) e <b>intercambio de claves SRTP</b> SDES</p>
+
+fig.2:<br />
+<img src='/tpl/sflphone/rflphone-secure-2.png' /><br />
+
+<h3>Opciones TLS</h3>
+<p>Luego, pinchamos en el boton de editar al lado del checkbox de tls, y nos fijamos en las siguientes opciones:</p>
+<li>Chequear certificados entrantes, como un servidor: desactivado.</li>
+<li>Chequear certificados de la respuesta, como cliente.</li>
+<p>El resto de opciones no son criticas, podemos fijarnos en la (fig.3) si hay alguna duda.</p>
+
+fig.3:<br />
+<img src='/tpl/sflphone/rflphone-secure-3.png' /><br />
+
+<h3>¡Conectamos!</h3>
+<p>Una vez realizado todo esto, ya podemos guardar la configuracion y conectar la cuenta. Deberia conectarse sin problemas (fig.3), y luego las llamadas saldran con un candadito si todo ha ido bien lo que quiere decir que van cifradas (fig.5).</p>
+
+<p>Una vez conectes, puedes llamar al 0 si crees que el tutorial puede mejorarse o has encontrado algun problema.</p>
+
+fig.4:<br />
+<img src='/tpl/sflphone/rflphone-secure-4.png' /><br />
+fig.5:<br />
+<img src='/tpl/sflphone/rflphone-secure-5.png' /><br />
