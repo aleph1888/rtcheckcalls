@@ -1,20 +1,19 @@
-import subprocess
 import time
 import md5
 
 from obelisk.asterisk.model import SipPeer, Extension, VoiceMail
+from obelisk.asterisk import cli
 from obelisk.model import Model
 
-def reload_asterisk(peer_name):
-	output = subprocess.Popen(['/usr/sbin/asterisk', '-nrx', 'sip prune realtime peer ' + peer_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-	print output
-	output = subprocess.Popen(['/usr/sbin/asterisk', '-nrx', 'sip show peer ' + peer_name + ' load'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+def reload_peer(peer_name):
+	cli.run_command('sip prune realtime peer ' + peer_name)
+	cli.run_command('sip show peer ' + peer_name + ' load')
 
 def reload_peers():
 	model = Model()
 	peers = model.query(SipPeer)
 	for peer in peers:
-		reload_asterisk(peer.name)
+		reload_peer(peer.name)
 
 def get_options(user_ext):
 	model = Model()
@@ -49,17 +48,16 @@ def change_options(user_ext, options):
 		peer.md5secret = hashed
 		peer.secret = ''
 	# newcodecs
-	newcodecs = False
-	if 'codecs' in options:
-		newcodecs = options['codecs']
+	newcodecs = options.get('codecs', False)
 	if newcodecs:
 		peer.disallow = 'all'
 		peer.allow = ','.join(newcodecs)
 	else:
 		peer.disallow = ''
 		peer.allow = ''
+
 	# tls
-	if  options.get('tls', False):
+	if options.get('tls', False):
 		peer.transport = 'tls'
 	else:
 		peer.transport = 'udp'
@@ -68,6 +66,7 @@ def change_options(user_ext, options):
 		peer.encryption = 'yes'
 	else:
 		peer.encryption = 'no'
+
 	# voicemail
 	exten = model.query(Extension).filter_by(exten=peer.regexten).first()
 	if options.get('voicemail', False):
@@ -80,8 +79,9 @@ def change_options(user_ext, options):
 	exten_sip.app = exten.app
 	exten_sip.appdata = exten.appdata
 	model.session.commit()
+
 	# reload asterisk
-	reload_asterisk(peer.name)
+	reload_peer(peer.name)
 	return True
 
 
@@ -94,7 +94,7 @@ def change_password(user_ext, password):
 	peer.secret = ''
 	model.session.commit()
 	# reload asterisk
-	reload_asterisk(peer.name)
+	reload_peer(peer.name)
 
 def add_extension(username, extension):
 	model = Model()
@@ -146,7 +146,7 @@ def create_user(username, password):
 			context="from-payuser")
 
 	# reload asterisk
-	reload_asterisk(peer.name)
+	reload_peer(peer.name)
 	print "user created", username, nextexten
 	return peer
 

@@ -1,6 +1,5 @@
 from twisted.web.resource import Resource
 from twisted.web.util import redirectTo
-import subprocess
 import re
 
 from obelisk.accounting import accounting

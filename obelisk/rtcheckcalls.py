@@ -1,4 +1,3 @@
-import subprocess
 from twisted.internet import reactor
 from decimal import Decimal
 import math
@@ -14,6 +13,7 @@ from obelisk.resources import sse
 from obelisk import calls
 from obelisk.model import Model, User
 from obelisk.asterisk.model import SipPeer
+from obelisk.asterisk import cli
 
 filename = "/var/log/asterisk/cel-custom/Master.csv"
 
@@ -115,7 +115,7 @@ class CallMonitor(object):
 		    self.log("CUTTING CALL (%s)" % (reason, ))
 	    else:
 		    self.log("CUTTING CALL")
-            print self.run_asterisk_cmd("channel request hangup %s" % (channel))
+            print cli.run_command("channel request hangup %s" % (channel))
     def on_chan_start(self, args):
 	    channel = args['channel']
 	    # precut call if user can't pay it
@@ -152,13 +152,6 @@ class CallMonitor(object):
 		            # save accounting data
 		    	    accounting.remove_credit(self._from_exten, totalcost)
                     calls.add_call(self._from_exten, self._real_to, self._starttime, totaltime, roundedtime, totalcost, self._cost, self._provider)
-
-    def run_asterisk_cmd(self, cmd):
-	    return self.run_command(['/usr/sbin/asterisk', '-nrx', cmd])
-
-    def run_command(self, cmd):
-	    output = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-	    return output
 
 class CallManager(object):
     def __init__(self):

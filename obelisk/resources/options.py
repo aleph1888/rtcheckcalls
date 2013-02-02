@@ -1,13 +1,9 @@
 from twisted.web.resource import Resource
 from twisted.web.util import redirectTo
-import subprocess
 
-from obelisk.accounting import accounting
-from decimal import Decimal
 from obelisk import session
 
 from obelisk.model import Model
-from obelisk.resources import login
 
 from obelisk.templates import print_template
 from obelisk.asterisk.users import change_options, get_options

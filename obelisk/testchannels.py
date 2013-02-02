@@ -1,16 +1,9 @@
-import subprocess
 from obelisk.resources import sse
+from obelisk.asterisk import cli
 
 class TestChannels(object):
-    def run_asterisk_cmd(self, cmd):
-            return self.run_command(['/usr/sbin/asterisk', '-nrx', cmd])
-
-    def run_command(self, cmd):
-            output = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-            return output
-
     def get_channelstats(self):
-	raw_data = self.run_asterisk_cmd("sip show channelstats")
+	raw_data = cli.run_command("sip show channelstats")
 	raw_data = raw_data.split("\n")[1:-2]
 	#print raw_data
 	data = {}
@@ -31,7 +24,7 @@ class TestChannels(object):
 	return data
 
     def get_channels(self):
-	raw_data = self.run_asterisk_cmd("sip show channels")
+	raw_data = cli.run_command("sip show channels")
 	raw_data = raw_data.split("\n")[1:-2]
 	#print raw_data
 	data = {}

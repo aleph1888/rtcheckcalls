@@ -1,5 +1,3 @@
-import subprocess
-
 from twisted.web.resource import Resource
 from twisted.web.util import redirectTo
 from twisted.internet import reactor
@@ -9,6 +7,7 @@ from obelisk.templates import print_template
 
 from obelisk.resources import sse
 from obelisk.asterisk import ami
+from obelisk.asterisk import cli
 from obelisk.model import Model
 from obelisk.asterisk.model import SipPeer
 
@@ -67,7 +66,7 @@ class PeersResource(Resource):
 	reactor.callLater(5, self.get_peers_loop)
     def get_peers(self):
 	model = Model()
-	output = self.run_asterisk_cmd('sip show peers')
+	output = cli.run_command('sip show peers')
 	lines = output.split("\n")
 	res = ""
 	pln_nodes = []
@@ -123,7 +122,7 @@ class PeersResource(Resource):
 			if ext:
 				output['exten'] = ext
 		formatted[dest].append(output)
-	dundi_output = self.run_asterisk_cmd('dundi show peers')
+	dundi_output = cli.run_command('dundi show peers')
 	lines = dundi_output.split("\n")
 	res = ""
 	for line in lines[1:-2]:
@@ -162,7 +161,7 @@ class PeersResource(Resource):
 
     def get_dundi_peer(self, dundi_id):
 	if not dundi_id in self._dundi_peers:
-		self._dundi_peers[dundi_id] = self.run_asterisk_cmd('dundi show peer ' + dundi_id)
+		self._dundi_peers[dundi_id] = cli.run_command('dundi show peer ' + dundi_id)
 	return self._dundi_peers[dundi_id]
 
     def render_GET(self, request):
@@ -170,7 +169,7 @@ class PeersResource(Resource):
 	if not user:
 		return redirectTo("/", request)
 	model = Model()
-	output = self.run_asterisk_cmd('sip show peers')
+	output = cli.run_command('sip show peers')
 	lines = output.split("\n")
 	res = ""
 	formatted = {"local": "<tr><th>Nombre</th><th>Ext</th><th>Estado</th><th>Latencia</th><tr>\n",
@@ -226,15 +225,9 @@ class PeersResource(Resource):
 	res += formatted['end']
 	res += "</table><pre>"
 	res += "<h2>Calls</h2>"
-	res += self.run_asterisk_cmd('core show calls')
+	res += cli.run_command('core show calls')
 	res += "</pre><pre>"
-	res += self.run_asterisk_cmd('core show uptime')
+	res += cli.run_command('core show uptime')
 	res += "</pre>"
 	return print_template('content-pbx-lorea', {'content': res})
-    def run_asterisk_cmd(self, cmd):
-	return self.run_command(['/usr/sbin/asterisk', '-nrx', cmd])
-    def run_command(self, cmd):
- 	output = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-	return output
-
 

@@ -1,6 +1,5 @@
 from twisted.web.resource import Resource
 from twisted.web.util import redirectTo
-import subprocess
 from datetime import datetime
 import csv
 
@@ -147,9 +146,4 @@ class UserResource(Resource):
 	return res
     def getChild(self, name, request):
         return self
-    def run_asterisk_cmd(self, cmd):
-	return self.run_command(['/usr/sbin/asterisk', '-nrx', cmd])
-    def run_command(self, cmd):
- 	output = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-	return output
 
