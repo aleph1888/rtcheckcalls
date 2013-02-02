@@ -33,6 +33,7 @@ class OptionsResource(Resource):
 			options['srtp'] = args['srtp']
 		else:
 			options['srtp'] = False
+		options['voicemail'] = args.get('voicemail', False)
 		if 'ext' in args and args['ext'] and logged.admin:
 			user_ext = args['ext']
 		if 'lowquality' in args and args['lowquality']:
@@ -51,7 +52,7 @@ class OptionsResource(Resource):
 		user_ext = parts[2]
 	else:
 		user_ext = logged.voip_id
-	args = {'ext': user_ext, 'lowquality': '', 'tls': '', 'srtp': ''}
+	args = {'ext': user_ext, 'lowquality': '', 'tls': '', 'srtp': '', 'voicemail': ''}
 	options = get_options(user_ext)
 	if 'codecs' in options and 'gsm' in options['codecs']:
 		args['lowquality'] = ' checked '
@@ -59,6 +60,8 @@ class OptionsResource(Resource):
 		args['tls'] = ' checked '
 	if options['srtp']:
 		args['srtp'] = ' checked '
+	if options['voicemail']:
+		args['voicemail'] = ' checked '
 	content = print_template('options', args)
 	return print_template('content-pbx-lorea', {'content': content})
 

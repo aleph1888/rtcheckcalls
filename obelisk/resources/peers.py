@@ -19,6 +19,7 @@ class PeersResource(Resource):
 	global resource
 	Resource.__init__(self)
 	resource = self
+	self._dundi_peers = {}
 	self._peers = self.get_peers()
 	ami.connector.registerEvent('PeerStatus', self.on_peer_event)
 	reactor.callLater(10, self.get_peers_loop)
@@ -46,8 +47,8 @@ class PeersResource(Resource):
 			event['srtp'] = False
 		sse.resource.notify(event, 'peer' ,'all')
 	else:
-		sse.resource.notify(event, 'peer' ,'all')
 		event['channel'] = True
+		sse.resource.notify(event, 'peer' ,'all')
     def get_extension(self, line, dialplan):
 	try:
 	    name = line.split(" ", 1)[0].split("/")[0]
@@ -69,8 +70,10 @@ class PeersResource(Resource):
 	output = self.run_asterisk_cmd('sip show peers')
 	lines = output.split("\n")
 	res = ""
+	pln_nodes = []
 	formatted = {"local": [],
 		     "channels": [],
+		     "pln": [],
 		     "end": []}
 	for line in lines[1:]:
 		line = line.replace(" D ", "")
@@ -84,6 +87,7 @@ class PeersResource(Resource):
 			continue
 		peer_name = parts[0].split("/")[0]
 		ext = None
+		ip = parts[1].strip()
 		port = parts[2].strip()
 		peer = model.query(SipPeer).filter_by(name=peer_name).first()
 		output = {'name': peer_name, 'status': parts[3]}
@@ -101,6 +105,11 @@ class PeersResource(Resource):
 				output['tls'] = True
 			else:
 				output['tls'] = False
+		elif ip.startswith('1.'):
+			dest = 'pln'
+			if peer_name in pln_nodes:
+				continue
+			pln_nodes.append(peer_name)
 		else:
 			dest = 'channels'
 		if len(parts) > 4 and not port == '0':
@@ -114,7 +123,47 @@ class PeersResource(Resource):
 			if ext:
 				output['exten'] = ext
 		formatted[dest].append(output)
+	dundi_output = self.run_asterisk_cmd('dundi show peers')
+	lines = dundi_output.split("\n")
+	res = ""
+	for line in lines[1:-2]:
+		line = line.replace("(S)", "")
+		parts = line.split()
+		if not len(parts) > 5:
+			continue
+		pln_id = parts[0]
+		if pln_id == '00:50:bf:5a:71:6b':
+			# ourselves
+			continue
+		pln_ip = parts[1]
+		pln_port = parts[2]
+		pln_model = parts[3]
+		avg_time = parts[4]
+		status = parts[5]
+		dundi_peer = self.get_dundi_peer_name(pln_id)
+		if dundi_peer in pln_nodes:
+			continue
+		if len(parts) > 6:
+			latency = parts[6].strip("(")
+		else:
+			latency = ''
+		output = {'name': dundi_peer, 'status': status, 'ping': latency}
+		formatted['pln'].append(output)
+		
 	return formatted
+
+    def get_dundi_peer_name(self, dundi_id):
+	peer = self.get_dundi_peer(dundi_id)
+	lines = peer.split("\n")
+	for line in lines:
+		if 'In Key' in line:
+			return line.split(":")[1].strip()
+	return "unknown"
+
+    def get_dundi_peer(self, dundi_id):
+	if not dundi_id in self._dundi_peers:
+		self._dundi_peers[dundi_id] = self.run_asterisk_cmd('dundi show peer ' + dundi_id)
+	return self._dundi_peers[dundi_id]
 
     def render_GET(self, request):
 	user = session.get_user(request)

@@ -29,6 +29,11 @@ def get_options(user_ext):
 		options['codecs'] = []
 	if peer.allow:
 		options['codecs'] = peer.allow.split(',')
+	exten = model.query(Extension).filter_by(exten=peer.regexten).first()
+	if exten.app == 'Gosub':
+		options['voicemail'] = True
+	else:
+		options['voicemail'] = False
 	return options
 
 def change_options(user_ext, options):
@@ -54,21 +59,26 @@ def change_options(user_ext, options):
 		peer.disallow = ''
 		peer.allow = ''
 	# tls
-	tls = False
-	if 'tls' in options:
-		tls = options['tls']
-	if  tls:
+	if  options.get('tls', False):
 		peer.transport = 'tls'
 	else:
 		peer.transport = 'udp'
 	# srtp
-	srtp = False
-	if 'srtp' in options:
-		srtp = options['srtp']
-	if srtp:
+	if options.get('srtp', False):
 		peer.encryption = 'yes'
 	else:
 		peer.encryption = 'no'
+	# voicemail
+	exten = model.query(Extension).filter_by(exten=peer.regexten).first()
+	if options.get('voicemail', False):
+		exten.app = 'Gosub'
+		exten.appdata = 'stdexten,%s,1(SIP/%s,default)' % (peer.regexten, peer.name)
+	else:
+		exten.app = 'Dial'
+		exten.appdata = 'SIP/%s,60' % (peer.name,)
+	exten_sip = model.query(Extension).filter_by(exten=peer.name).first()
+	exten_sip.app = exten.app
+	exten_sip.appdata = exten.appdata
 	model.session.commit()
 	# reload asterisk
 	reload_asterisk(peer.name)

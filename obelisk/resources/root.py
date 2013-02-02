@@ -20,6 +20,7 @@ from obelisk.resources.register import RegisterResource
 from obelisk.resources.options import OptionsResource
 from obelisk.resources.changepass import ChangePassResource
 from obelisk.resources.docs import DocsResource
+from obelisk.resources.voicemail import VoiceMailResource
 from obelisk.templates import print_template
 from obelisk.pricechecker import get_winners
 
@@ -42,6 +43,7 @@ class RootResource(Resource):
 	ami.connector.registerEvent('CEL', self.call_manager.on_event)
         self.putChild("voip", PeersResource())
         self.putChild("prices", PricesResource())
+        self.putChild("voicemail", VoiceMailResource())
         self.putChild("user", UserResource())
         self.putChild("sse", SSEResource())
         self.putChild("calls", CallsResource())
@@ -85,7 +87,7 @@ class RootResource(Resource):
 	if user:
 		user_ext = user.voip_id
 		output_user = "<li><a href='/user/"+user.voip_id+"'>datos usuario</a></li>"
-		output_user += "<li><a href='/voip'>extensiones</a></li>"
+		output_user += "<li><a href='/voip'>listin telefonico</a></li>"
 		output_user += "<li><a href='/stats'>estadisticas</a></li>"
 		if user.admin == 1:
 			output_user += "<li><a href='/user/accounts'>credito total</a></li>"

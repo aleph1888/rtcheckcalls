@@ -65,8 +65,11 @@ class CallMonitor(object):
 		self._real_to = dest
 	    else:
 		provider = 'direct'
+	    if not self._real_to:
+		# incoming calls from other providers
+		self._real_to = event['exten']
             self._provider = provider
-	    self.log("call from %s to %s with %s mana remaining (%s)" % (self._from, self._to, accounting.get_mana(self._from_exten), self._provider))
+	    self.log("call from %s to %s with %s mana remaining (%s)" % (self._from, self._real_to, accounting.get_mana(self._from_exten), self._provider))
     def on_answer(self, args):
 	    # XXX avoid multiple answers...
 	    if not args['calleridani']:

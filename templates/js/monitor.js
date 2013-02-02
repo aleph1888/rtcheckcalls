@@ -44,7 +44,7 @@ var root_text = Array()
 var calls = {}
 
 // Channels
-var all_channels = {'channels':{}, 'local':{}}
+var all_channels = {'channels':{}, 'local':{}, 'pln':{}}
 
 // Floating elements
 var floats = Array();
@@ -436,6 +436,7 @@ function parse_call(pars) {
 	// Check conversation legs
 	check_legs(all_channels['local'], from, to, call);
 	check_legs(all_channels['channels'], from, to, call);
+	check_legs(all_channels['pln'], from, to, call);
 
 	// Calculate involved channels
 	var involved = Array();
@@ -520,6 +521,7 @@ $(document).ready( function () {
 		var data = JSON.parse(e.data);
 		create_channels(data['local'], all_channels['local'], 90.0, 8, false);
 		create_channels(data['channels'], all_channels['channels'], 150.0, 12, true);
+		create_channels(data['pln'], all_channels['pln'], 220.0, 15, true);
 	}, false);
 
 	source.addEventListener('peer', function(e) {
