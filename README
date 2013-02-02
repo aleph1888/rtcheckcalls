@@ -13,6 +13,7 @@ Features:
   - Real time visualization of peers and calls
 
 Running
+------------------------------
 1. Install dependencies and configure asterisk (see below)
 
 2. Create config.json file (into the root folder of the application) with the following contents:
@@ -83,9 +84,21 @@ The daemon uses the following structure:
     - templates/: html and javascript code for the client part
     - data/: application data cache (mainly prices from providers and related calculations)
     - lib/: python dependencies
-    
+ 
+
+Running on machine start:
+---------------------------
+
+Add it on /etc/rc.local:
+screen -S voip -d -m sudo -u root /home/caedes/rtcheckcalls/run.sh
+screen -S pricechecker -d -m sudo -u root /home/caedes/rtcheckcalls/obelisk/pricechecker.py
+
+
 
 -----
+
+
+
 
 https://github.com/lorea/rtcheckcalls
 
