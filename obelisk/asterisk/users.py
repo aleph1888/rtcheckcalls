@@ -138,12 +138,12 @@ def create_user(username, password):
 			name=username,
 			md5secret=password,
 			callerid='%s <%s>' % (username, nextexten),
-			type='peer',
+			type='friend',
 			host='dynamic',
 			nat='comedia,force_rport',
 			qualify='yes',
 			mailbox=str(nextexten),
-			context="from-payuser")
+			context="from-freeuser")
 
 	# reload asterisk
 	reload_peer(peer.name)
