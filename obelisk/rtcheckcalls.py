@@ -181,7 +181,7 @@ class CallManager(object):
 	    self.write("? " + command + " " + str(event))
 
     def on_chan_start(self, args):
-	    app_uniqid = args['uniqueid']
+	    app_uniqid = args['linkedid']
 	    if app_uniqid in self._calls:
 		    self._calls[app_uniqid].on_chan_start(args)
 	    self.write("chan start: " +  str(args) + " " + str(args['uniqueid']))
