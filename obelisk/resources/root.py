@@ -91,7 +91,7 @@ class RootResource(Resource):
 		output_user += "<li><a href='/stats'>estadisticas</a></li>"
 		if user.admin == 1:
 			output_user += "<li><a href='/user/accounts'>credito total</a></li>"
-			output_user += "<li><a href='/providers'>precios proveedores</a></li>"
+			output_user += "<li><a href='/prices/check'>precios proveedores</a></li>"
 			output_user += "<li><a href='/calls'>llamadas</a></li>"
 			output_user += "<li><a href='/tpl/sse.html'>ojo de mordor</a></li>"
 			user_ext += " eres admin"
