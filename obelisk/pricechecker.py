@@ -29,7 +29,7 @@ providers['justvoip']= "http://www.justvoip.com/rates"
 providers['lowratevoip']= "http://www.lowratevoip.com/rates"
 providers['netappel']= "http://www.netappel.fr/rates" #french
 providers['sipdiscount']= "http://www.sipdiscount.com/rates"
-providers['powevoip']= "http://www.powervoip.com/rates"
+providers['powervoip']= "http://www.powervoip.com/rates"
 providers['poivy']= "https://www.poivy.com/rates"
 providers['powervoip']= "http://www.powervoip.com/rates"
 providers['rynga']= "http://www.rynga.com/rates"
@@ -52,8 +52,8 @@ providers['freecall']="http://www.freecall.com/rates"
 providers['powervoip']="http://www.powervoip.com/calling-rates.html"
 providers['hotvoip']="http://www.hotvoip.com/rates"
 providers['voipyo']="http://voipyo.com/rates"
-providers['terrssip']="http://www.terrasip.com/index.php?seite=tarife4&t_country=gb&language=gb&t_lang=en"
-
+providers['terrassip']="http://www.terrasip.com/index.php?seite=tarife4&t_country=gb&language=gb&t_lang=en"
+providers['budgetvoip']="http://www.budgetvoip.com/en/rates/"
 codes = {}
 
 def parse_codes():
@@ -71,7 +71,7 @@ def parse_codes():
 				parts = code.split("-")
 				code = parts[0]
 				type = parts[1]
-			codes[name] = [code, type]
+			codes[name.lower()] = [code, type]
 	return codes
 	
 parse_codes()
@@ -80,6 +80,7 @@ def find_country_info(data, pos):
 	pos2 = data.find('&nbsp;', pos)
 
 	country = data[pos+(len('<td class="column-country">')):pos2]
+	country = country.replace("&nbsp;", "").lower()
 	type = None
 	if country in codes:
 		country, type = codes[country]
@@ -91,7 +92,7 @@ def find_country_info(data, pos):
 	pos4 = data.find('</span>', pos3)
 
 	if not type:
-		type = data[pos3+len('<span class="type">'):pos4].strip("()")
+		type = data[pos3+len('<span class="type">'):pos4].strip("()").strip().lower()
 		if type in codes:
 			type, _ = codes[type]
 		else:
@@ -101,12 +102,17 @@ def find_country_info(data, pos):
 	pos5 = data.find('<td class="column-vat">', pos)
 	pos6 = data.find('</td>', pos5)
 
-	rate = data[pos5+len('<td class="column-vat">'):pos6]
+	rate = data[pos5+len('<td class="column-vat">'):pos6].strip(" $")
 	return country, type, rate
 
 def check_provider(rates_url):
 	handle = urllib.urlopen(rates_url)
 	data = handle.read()
+	data = data.replace('trodd"><td>&nbsp;&nbsp;', 'trodd"><td class="column-country">')
+	data = data.replace('treven"><td>&nbsp;&nbsp;', 'trodd"><td class="column-country">')
+	data = data.replace(' [fixed] ', '&nbsp;<span class="type">(Landline)</span>&nbsp;')
+	data = data.replace(' [mobile] ', '&nbsp;<span class="type">(Mobile)</span>&nbsp;')
+	data = data.replace('ratesvat', 'column-vat')
 	pos = data.find('<td class="column-country">')
 
 	rates = defaultdict(dict)
@@ -150,7 +156,7 @@ def get_winners(daemon=False):
 	for provider in rates:
 	    for country in rates[provider]:
 		for type in rates[provider][country]:
-		    rate = rates[provider][country][type].strip()
+		    rate = str(rates[provider][country][type].strip())
 		    key = str(country)+" "+str(type)
 		    if not key in winners:
 			winners[key] = [rate, [provider]]
