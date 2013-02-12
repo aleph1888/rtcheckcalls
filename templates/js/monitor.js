@@ -324,8 +324,10 @@ function create_channel(channels, name, nick, latency, state, is_channel, size, 
 			}
 			if (pars['srtp'] && pars['tls']) {
 				channels[name].lockicon = new Icon(ICON_LOCK, "#FF9", "#000", 0.6);
-			} else if (pars['srtp'] || pars['tls']) {
+			} else if (pars['tls']) {
 				channels[name].lockicon = new Icon(ICON_LOCK, "#FFF", "#000", 0.5);
+			} else if (pars['srtp']) {
+				channels[name].lockicon = new Icon(ICON_LOCK, "#000", "#FFF", 0.5);
 			}
 		}
 }
