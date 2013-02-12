@@ -140,9 +140,9 @@ def create_user(username, password):
 			callerid='%s <%s>' % (username, nextexten),
 			type='friend',
 			host='dynamic',
-			nat='comedia,force_rport',
-			qualify='yes',
-			mailbox=str(nextexten),
+			nat='comedia,force_rport',	# natted
+			qualify='yes',			# follow status
+			mailbox=str(nextexten), 	# register with voicemail mwi
 			context="from-freeuser")
 
 	# reload asterisk
