@@ -50,7 +50,7 @@ class Call(Base):
 	cost = Column(Numeric(10,6))
 	rate = Column(Numeric(10,6))
 	provider_id = Column(ForeignKey('providers.id'))
-	provider = relationship("Provider", backref=backref('calls', order_by=id))
+	provider = relationship("Provider", backref=backref('calls', order_by=id, lazy='dynamic'))
 	def __repr__(self):
 		return "<Call('%s','%s', '%s')>" % (self.destination, self.timestamp, self.duration)
 
