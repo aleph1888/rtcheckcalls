@@ -16,7 +16,7 @@ def connect():
 class PersistentAMIProtocol(manager.AMIProtocol):
 	def connectionLost( self, reason ):
 		global connector
-		print "disconnected wait 5 seconds to connect"
+		print "disconnected wait 5 seconds to connect", reason
 		reactor.callLater(5, connector.connect)
 		return manager.AMIProtocol.connectionLost(self, reason)
 
@@ -68,7 +68,7 @@ class AMIConnector(object):
 		reload_peers()
 
 	def onFullyBooted(self, ami, event):
-		self.sendMessage('"admin" <sip:admin@pbx.lorea.org>', 'sip:caedes', 'all systems functional')
+		self.sendMessage('"admin" <sip:admin@pbx.lorea.org>', 'sip:caedes_roam', 'all systems functional')
 		#self.sendAction('MailboxStatus', mailbox='6001')
 		#self.sendAction('MailboxCount', mailbox='6001')
 		#self.sendAction('SIPshowregistry')
@@ -99,6 +99,7 @@ class AMIConnector(object):
 
 	def messageError(self, *args):
 		print "message error", args[0], 'ok'
+		return True
 
 	def sendMessage(self, from_user, to_user, text, cb=None, eb=None):
         	self.sendAction('MessageSend', {'action':'MessageSend','from':from_user,'to':to_user ,'base64body': base64.b64encode(text)})
@@ -113,7 +114,7 @@ class AMIConnector(object):
  	        #defer = self.ami.sendDeferred( message ).addCallback( self.actionCallback ).addErrback(self.actionCallback)
  	        #defer = self.ami.sendDeferred( message ).addCallback( self.ami.errorUnlessResponse )
  	        defer = self.ami.sendDeferred( message )
-		defer.addCallback(self.messageSent).addErrback(self.messageError)
+		#defer.addCallback(self.messageSent).addErrback(self.messageError)
 		if cb:
 			defer.addCallback(cb)
 		if eb:
