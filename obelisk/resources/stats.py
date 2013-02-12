@@ -12,6 +12,8 @@ from decimal import Decimal
 from obelisk.config import config
 from obelisk.model import Model, WebSession, User, Call, Charge
 from obelisk.templates import print_template
+from obelisk.tools import host_info
+from obelisk import session
 
 class StatsResource(Resource):
     def __init__(self):
@@ -21,6 +23,7 @@ class StatsResource(Resource):
         return self
 
     def render_GET(self, request):
+	logged = session.get_user(request)
 	parts = request.path.split("/")
 	if len(parts) > 3:
 		section = parts[2]
@@ -45,7 +48,14 @@ class StatsResource(Resource):
 		elif section == 'monthly':
 			return self.minutes_stats(request, 60*60*24*30, 10, c, o)
 	else:
+		if len(parts) > 2:
+			section = parts[2]
+			if section == 'host':
+				content = host_info.get_report()
+				return print_template("content-pbx-lorea", {'content': content})
 		general_stats = self.general_stats()
+		if logged and logged.admin:
+			general_stats += "<p><a href='/stats/host'>host stats</a><br /><a href='/providers'>provider stats</a></p>"
 		return print_template("graphs", {'stats': general_stats})
 
         return request.path
