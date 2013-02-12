@@ -36,7 +36,7 @@ class PeersResource(Resource):
 		event['exten'] = peer.regexten
 		event['useragent'] = peer.useragent
 		event['channel'] = False
-		if peer.fullcontact and 'transport=TLS' in peer.fullcontact:
+		if peer.fullcontact and 'transport=tls' in peer.fullcontact.lower():
 			event['tls'] = True
 		else:
 			event['tls'] = False
@@ -100,7 +100,7 @@ class PeersResource(Resource):
 				output['srtp'] = True
 			else:
 				output['srtp'] = False
-			if peer.fullcontact and 'transport=TLS' in peer.fullcontact:
+			if peer.fullcontact and 'transport=tls' in peer.fullcontact.lower():
 				output['tls'] = True
 			else:
 				output['tls'] = False
