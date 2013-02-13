@@ -24,19 +24,20 @@ class VoiceMailResource(Resource):
 	ext = logged.voip_id
 
 	parts = request.path.split("/")
-	if len(parts) > 3:
+	if len(parts) > 4:
 		action = parts[2]
-		msg_id = parts[3]
+		user_ext = parts[3]
+		msg_id = parts[4]
 		if action == 'delete':
-			ext = self.delete_voicemail(request, logged, msg_id)
+			ext = self.delete_voicemail(request, logged, user_ext, msg_id)
 	
 	return redirectTo("/voicemail/"+ext, request)
 
-    def delete_voicemail(self, request, logged, msg_id):
+    def delete_voicemail(self, request, logged, user_ext, msg_id):
 	model = Model()
-	msg = model.query(VoiceMailMessage).filter_by(msg_id=msg_id).first()
-	mb_user = msg.mailboxuser
-	if msg and msg.recording and (mb_user == logged.voip_id or logged.admin):
+	msg = model.query(VoiceMailMessage).filter_by(msg_id=msg_id, mailboxuser=user_ext).first()
+	if msg and msg.recording and (msg.mailboxuser == logged.voip_id or logged.admin):
+		mb_user = msg.mailboxuser
 		number = msg.msgnum
 		msgdir = msg.dir
 		model.session.delete(msg)
@@ -99,7 +100,7 @@ class VoiceMailResource(Resource):
 		for message in messages:
 			if message.msg_id:
 				audio = html.format_audio('/voicemail/message/' + message.msg_id)
-				actions = '<form method="POST" action="/voicemail/delete/%s"><input type="hidden" name="msg_id" value="%s" /><input type="submit" name="submit" value="Borrar" /></form>' % (message.msg_id, message.msg_id)
+				actions = '<form method="POST" action="/voicemail/delete/%s/%s"><input type="hidden" name="msg_id" value="%s" /><input type="hidden" name="user_ext" value="%s" /><input type="submit" name="submit" value="Borrar" /></form>' % (user_ext, message.msg_id, message.msg_id, user_ext)
 			else:
 				audio = ""
 				actions = ""
