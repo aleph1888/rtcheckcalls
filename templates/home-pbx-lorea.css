@@ -12,8 +12,16 @@ body{
 	margin: 10px;
 }
 
-#header {
+#header-frontpage {
 	height: 80px;
+	color: #ddd;
+	text-shadow: 0px 0px 7px #1FF;
+	margin-bottom: 10px;
+
+}
+
+#header {
+	height: 40px;
 	color: #ddd;
 	text-shadow: 0px 0px 7px #1FF;
 	margin-bottom: 10px;
@@ -25,7 +33,7 @@ body{
 	font-weight: bold;
 	color: white;
 	float: right;
-	height: 80px;
+	height: 40px;
 } 
 
 #content{
