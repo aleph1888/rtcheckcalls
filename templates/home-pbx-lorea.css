@@ -20,6 +20,13 @@ body{
 
 }
 
+#portada {
+	left: 400px;
+	top: 100px;
+	position: absolute;
+	width: 40%;
+}
+
 #header {
 	height: 40px;
 	color: #ddd;

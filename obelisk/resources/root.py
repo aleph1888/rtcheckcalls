@@ -86,6 +86,7 @@ class RootResource(Resource):
 	output += "<li><a href='/docs'>documentacion</a></li>"
 
 	user = session.get_user(request)
+        main_page = print_template('portada', {})
 	if user:
 		user_ext = user.voip_id
 		output_user = "<li><a href='/user/"+user.voip_id+"'>datos usuario</a></li>"
@@ -96,10 +97,10 @@ class RootResource(Resource):
 			user_ext += " eres admin"
 		output_user += "<li><a href='/logout'>logout</a></li>"
 
-	        return print_template('logged-pbx-lorea', {'LINKS':output, 'LOGGED_LINKS':output_user, 'user': user_ext})
+	        return print_template('logged-pbx-lorea', {'LINKS':output, 'LOGGED_LINKS':output_user, 'user': user_ext, 'content': main_page})
 	else:
 		output += "<li><a href='/register'>registrarse</a></li>"
-	        return print_template('home-pbx-lorea', {'LINKS':output})
+	        return print_template('home-pbx-lorea', {'LINKS':output, 'content': main_page})
 
     def render_POST(self, request):
 	return "<p>xxxxx</p>"
