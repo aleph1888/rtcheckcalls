@@ -11,12 +11,16 @@ def parse_prices():
 	label = ""
 	label_price = ""
 	type = ""
+	extension = ""
 	for line in f.readlines():
 		
 		if line.startswith(";"):
 			pass
 		elif line.startswith("["):
 			label = line[1:line.find("]")]
+			extension = ""
+			if ";" in line:
+				extension = line[line.find(";")+1:].strip().split()[0]
 			label_parts = label.rsplit("-", 1)
 			label = label_parts[0]
 			label_price = ""
@@ -35,10 +39,10 @@ def parse_prices():
 			if not label in prices:
 				prices[label] = {}
 			if type == 'fixmob':
-				prices[label]['fix'] =  [price, provider]
-				prices[label]['mob'] =  [price, provider]
+				prices[label]['fix'] =  [price, provider, extension]
+				prices[label]['mob'] =  [price, provider, extension]
 			else:
-				prices[label][type] =  [price, provider]
+				prices[label][type] =  [price, provider, extension]
 	f.close()
 	return prices
 
@@ -66,9 +70,13 @@ def list_prices_json():
 	output = "{"
 
 	for label in labels:
+		first = True
 		output += "'"+label+"': {"
 		for call_type in prices[label]:
-			price, provider  = prices[label][call_type]
+			price, provider, extension  = prices[label][call_type]
+			if first:
+				first = False
+				output += "'ext': '" + str(extension) + "',"
 			if price == "0.0":
 				price = "'gratis'"
 			else:

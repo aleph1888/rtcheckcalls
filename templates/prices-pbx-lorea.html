@@ -26,12 +26,17 @@
 				<a href="/">inicio</a>
 				<div id="logo">%%logo%%</div>					
 			</header>
-			
 			<div id="content">
-				
 				<h2>Precios</h2>
 				<section id="img-logo"><img src="/tpl/hard-hat.png"/></section>
 				<section id="content_inner">
+					<div>
+					Todo gratis: <div style="width: 10px; height: 10px; background-color: #00CECE; display: inline-block; margin-right: 20px;" > </div>
+					Fijos gratis: <div style="width: 10px; height: 10px; background-color: #7199FF; display: inline-block;"> </div> - <div style="width: 10px; height: 10px; background-color: #414444; display: inline-block; margin-right: 20px;"> </div>
+					Nada gratis: <div style="width: 10px; height: 10px; background-color: #FF8888; display: inline-block;"> </div> - <div style="width: 10px; height: 10px; background-color: #CC00BB; display: inline-block; margin-right: 20px;">
+					</div>
+					Pasar el raton sobre un pais para ver sus precios.
+					<p>Todas las llamadas con coste tienen un coste de establecimiento de 0.1c</p>
 					<div id="map" style="width: 1000px; height: 500px"></div>	
 				</section>
 
@@ -82,17 +87,23 @@
 		<script type="text/javascript">
 			prices = %%prices%%;
 			countries = {};
+			free_countries = {};
+			price_countries = {};
 			$.each(prices, function(country_code, value) {
-				if (value.fix == 'gratis') {
-					countries[country_code.toUpperCase()] = 'fix-free';
+				if (value.fix == 'gratis' && value.mob == 'gratis') {
+					countries[country_code.toUpperCase()] = 'all-free';
+				}
+				else if (value.fix == 'gratis') {
+					if (value.mob)
+						val = value.mob;
+					else
+						val = 0.05;
+					free_countries[country_code.toUpperCase()] = val;
 				} else {
-					countries[country_code.toUpperCase()] = 'fix-pay';
+					price_countries[country_code.toUpperCase()] = value.mob;
 				}
 			});
 			$(function() {
-				$.each(prices, function(index, value) {
-					$("." + index.toLowerCase()).css('fill', '#ffb500').attr('title', '<b>' + index + '</b><br />fix: ' + prices[index].fix + '<br />mob: ' + prices[index].mob);
-				});
 				$('#map').vectorMap({
 					map: 'world_mill_en',
 					backgroundColor: $('body').css('background-color'),
@@ -104,19 +115,31 @@
 					series: {
 						regions: [{
 							scale: {
-								'fix-free': '#FF69B4',
-								'fix-pay': '#4169E1'
+								'all-free': '#00CECE',
 							},
 							attribute: 'fill',
 							values: countries,
-						}]
+						}, {
+                                                        scale: ['#FF8888', '#CC00BB' ,'#AA0038'],
+                                                        attribute: 'fill',
+                                                        values: price_countries,
+                                                }, {
+                                                        scale: ['#7199FF', '#414156', '#414444'],
+                                                        attribute: 'fill',
+                                                        values: free_countries,
+                                                }]
 					},
 					onRegionLabelShow: function(e, label, code) {
 						code = code.toLowerCase();
 						if (prices[code]) {
-							label.html('<strong>'+label.html()+'</strong><br />Fix: '+prices[code].fix+'<br />Mob: '+prices[code].mob);
+							var mobprice = prices[code].mob;
+							var extension = prices[code].ext;
+							if (mobprice == null) {
+								mobprice = 'no disponible';
+							}
+							label.html('<strong>'+label.html()+' (' + extension + ')</strong><br />Fix: '+prices[code].fix+'<br />Mob: '+mobprice);
 						} else {
-							label.html('<strong>'+label.html()+'</strong><br />Not available yet');
+							label.html('<strong>'+label.html()+'</strong><br />Aun no disponible');
 						}
 					}
 				});
