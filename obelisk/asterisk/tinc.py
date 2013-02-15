@@ -20,7 +20,8 @@ class Tinc(object):
 					self.name = value
 					keydata = self.parse_key(value)
 					self.pubkey = keydata['pubkey']
-					self.address = keydata['address']
+					self.address = keydata.get('address', '')
+					self.subnet = keydata.get('subnet', '')
 				elif key == 'ConnectTo':
 					self.nodes[value] = self.parse_key(value)
 
