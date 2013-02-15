@@ -21,6 +21,7 @@ from obelisk.resources.options import OptionsResource
 from obelisk.resources.changepass import ChangePassResource
 from obelisk.resources.docs import DocsResource
 from obelisk.resources.voicemail import VoiceMailResource
+from obelisk.resources.admin import AdminResource
 from obelisk.templates import print_template
 from obelisk.pricechecker import get_winners
 
@@ -55,6 +56,7 @@ class RootResource(Resource):
         self.putChild("providers", ProvidersResource())
         self.putChild("login", LoginResource())
         self.putChild("logout", LogoutResource())
+        self.putChild("admin", AdminResource())
         self.putChild("docs", DocsResource())
         self.putChild("icons", File("/usr/share/icons"))
         self.putChild("tpl", File(os.path.join(our_dir, "templates")))
@@ -81,7 +83,7 @@ class RootResource(Resource):
     def render_GET(self, request):
 
 	output = "<li><a href='/prices'>precios</a></li>"
-	output += "<li>tutos configuracion segura para <a href='/docs/csipsimple'>csipsimple</a> y <a href='/docs/sflphone'>sflphone</a> (tls y srtp)</a></li>"
+	output += "<li><a href='/docs'>documentacion</a></li>"
 
 	user = session.get_user(request)
 	if user:
@@ -90,10 +92,7 @@ class RootResource(Resource):
 		output_user += "<li><a href='/voip'>listin telefonico</a></li>"
 		output_user += "<li><a href='/stats'>estadisticas</a></li>"
 		if user.admin == 1:
-			output_user += "<li><a href='/user/accounts'>credito total</a></li>"
-			output_user += "<li><a href='/prices/check'>precios proveedores</a></li>"
-			output_user += "<li><a href='/calls'>llamadas</a></li>"
-			output_user += "<li><a href='/tpl/sse.html'>ojo de mordor</a></li>"
+			output_user += "<li><a href='/admin'>admin</a></li>"
 			user_ext += " eres admin"
 		output_user += "<li><a href='/logout'>logout</a></li>"
 
