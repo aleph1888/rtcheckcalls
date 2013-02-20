@@ -8,6 +8,7 @@ from obelisk.templates import print_template
 from obelisk.asterisk import cli
 from obelisk.asterisk.tinc import Tinc
 from obelisk.tools import html
+from obelisk.tools.htmltool import ok_icon, format_ping
 from ping import do_one
 
 import obelisk
@@ -15,12 +16,16 @@ import obelisk
 class TincResource(Resource):
     def __init__(self):
         Resource.__init__(self)
+	self.tinc = Tinc()
         #self.putChild("voip", PeersResource())
 
     def getChild(self, name, request):
         return self
 
     def render_GET(self, request):
+	parts = request.path.split('/')
+	if len(parts) > 2 and parts[2] == 'pubkey':
+		return self.tinc.get_public_key()
 	user = session.get_user(request)
 	if user and user.admin:
 		content = self.render_tinc(request)
@@ -39,15 +44,17 @@ class TincResource(Resource):
 	return output
 
     def render_tincpeers(self, request, tinc):
-	res = [['name', 'address', 'subnet', 'online']]
+	res = [['name', 'address', 'subnet', 'signal']]
 	for name, node in tinc.nodes.iteritems():
 		address = node.get('address', '')
 		subnet = node.get('subnet', '')
-		online = 'no'
+		online = ok_icon(False)
 		if subnet:
 			ping = do_one(subnet, 1)
 			if ping:
-				online = 'si ' + str(ping)
+				online = format_ping(ping)
+			else:
+				online = format_ping(False)
 		res.append([name, address, subnet, online])
 	return html.format_table(res)
 

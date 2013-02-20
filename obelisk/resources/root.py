@@ -4,7 +4,7 @@ from twisted.web.resource import Resource
 from twisted.web.static import File
 from twisted.web.wsgi import WSGIResource
 from twisted.internet import reactor
-from twisted.web.util import redirectTo
+from twisted.web.util import redirectTo, Redirect
 
 from obelisk.resources.peers import PeersResource
 from obelisk.resources.user import UserResource
@@ -22,6 +22,9 @@ from obelisk.resources.changepass import ChangePassResource
 from obelisk.resources.docs import DocsResource
 from obelisk.resources.voicemail import VoiceMailResource
 from obelisk.resources.admin import AdminResource
+from obelisk.resources.tinc import TincResource
+from obelisk.resources.dundi import DundiResource
+from obelisk.resources.pln import PLNResource
 from obelisk.templates import print_template
 from obelisk.pricechecker import get_winners
 
@@ -63,6 +66,15 @@ class RootResource(Resource):
         self.putChild("sip", File("/home/lluis/tst_sip_gui"))
         self.putChild("jssip", File("/home/caedes/jssip"))
         self.putChild("favicon.ico", File(os.path.join(our_dir, "templates", "telephone_icon.ico")))
+        self.putChild("tinc", TincResource())
+        self.putChild("dundi", DundiResource())
+        self.putChild("pln", PLNResource())
+	if 'pln' in obelisk.config.config:
+		pln_name = obelisk.config.config['pln']['name']
+		self.putChild(pln_name, Redirect('/tinc/pubkey'))
+		self.putChild(pln_name +'.pub', Redirect('/dundi/pubkey'))
+	self.putChild('node.json', Redirect('/pln/node.json'))
+
 	reactor.callLater(1, self.get_winners)
 	reactor.callLater(1, self.get_channel_test)
 	self.channel_tester = TestChannels()

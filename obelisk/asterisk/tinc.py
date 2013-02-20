@@ -7,6 +7,7 @@ class Tinc(object):
 	def __init__(self):
 		self.name = ""
 		self.nodes = {}
+		self.connections = {}
 		self.pubkey = ""
 		f = open(os.path.join(TINC_DIR, "tinc.conf"))
 		lines = f.readlines()
@@ -24,7 +25,13 @@ class Tinc(object):
 					self.subnet = keydata.get('subnet', '')
 				elif key == 'ConnectTo':
 					self.nodes[value] = self.parse_key(value)
-
+					node = self.nodes[value]
+					self.connections[node.get('subnet', '')] = node
+	def has_node(self, ip):
+		if ip in self.connections:
+			return True
+	def get_public_key(self):
+		return self.pubkey
 	def parse_key(self, name):
 		result = {}
 		f = open(os.path.join(TINC_DIR, "hosts", name))
