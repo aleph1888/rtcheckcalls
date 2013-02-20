@@ -7,6 +7,14 @@ body{
 	background-image: url('noise.png') repeat;
 }
 
+.pln-table {
+	width: 90%;
+	border: none;
+}
+
+.even {
+	background-color: #111;
+}
 
 #main-wrapper {
 	margin: 10px;
