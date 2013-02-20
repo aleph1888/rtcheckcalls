@@ -24,7 +24,7 @@ def check_prices():
 	counters = defaultdict(int)
 	for country in countries:
 		for type in prices[country]:
-			current_rate, provider_code = prices[country][type]
+			current_rate, provider_code, ext = prices[country][type]
 			if provider_code in providers:
 				try:
 					country_name = transformations.ccn_to_cn(transformations.cca2_to_ccn(country))
@@ -80,9 +80,9 @@ def check_prices():
 									counters[winner] += 1
 						
 				else:
-					output += "%s %s not available" % (country, type)
+					output += "%s %s not available\n" % (country, type)
 			else:
-				output += "unknown " + str(provider_code)
+				output += "unknown " + str(provider_code) + "\n"
 	output += "\n\nBETTER DEALS\n"
 	output += better_deal
 	output += "\nWINNER COUNTERS\n"
