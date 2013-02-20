@@ -1,7 +1,17 @@
+<h2>Registro</h2>
 <form method='POST' action='/register'>
-Usuario: <input name='user' type='text' value='%%user%%' /><br />
-Contrasenya: <input name='password' type='password' value='%%password%%' /><br />
-Email: <input name='email' type='text' value='%%email%%' /> (opcional)<br />
-<input name='submit' type='submit' value='submit' />
+<table>
+<tr valign="top">
+<td>
+Usuario:</td><td><input name='user' type='text' value='%%user%%' />
+</td></tr><tr><td>
+Contrasenya:</td><td><input name='password' type='password' value='%%password%%' />
+</td></tr><tr><td>
+Email:</td><td><input name='email' type='text' value='%%email%%' /> (opcional)
+</td>
+</tr>
+</table>
+<p>El email es recomendado para que podamos contactarte si hay cambios en la cuenta.</p>
+<input name='submit' type='submit' value='Enviar' />
 </form>
 %%error%%

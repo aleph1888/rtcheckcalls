@@ -89,6 +89,10 @@
 			countries = {};
 			free_countries = {};
 			price_countries = {};
+			prices['_1'] = {'fix': prices['rs'].fix, 'mob': prices['si'].mob, 'mob2': prices['mc'].mob, 'extfix': prices['rs'].ext, 'extmob': prices['si'].ext, 'extmob2': prices['mc'].ext} // kosovo
+			prices['_2'] = {'fix': prices['ma'].fix, 'mob': prices['ma'].mob, 'fix2': prices['mr'].fix, 'mob2': prices['mr'].mob, 'ext1': prices['ma'].ext, 'ext2': prices['mr'].ext} // western sahara
+			//prices['ps'] = {'fix': prices['ma'], 'mob': prices['ma'], 'fix2': prices['mr'], 'mob2': prices['mr']} // palestina
+			
 			$.each(prices, function(country_code, value) {
 				if (value.fix == 'gratis' && value.mob == 'gratis') {
 					countries[country_code.toUpperCase()] = 'all-free';
@@ -132,12 +136,44 @@
 					onRegionLabelShow: function(e, label, code) {
 						code = code.toLowerCase();
 						if (prices[code]) {
-							var mobprice = prices[code].mob;
-							var extension = prices[code].ext;
+							var currprice = prices[code];
+							var mobprice = currprice.mob;
 							if (mobprice == null) {
 								mobprice = 'no disponible';
 							}
-							label.html('<strong>'+label.html()+' (' + extension + ')</strong><br />Fix: '+prices[code].fix+'<br />Mob: '+mobprice);
+							var text = '<strong>'+label.html();
+							if (currprice.hasOwnProperty('ext')) {
+								text += ' (' + currprice.ext + ')';
+							}
+							if (currprice.hasOwnProperty('ext1')) {
+								text += '<br/>Extension '+currprice.ext1;
+							}
+							text += '</strong>';
+							//text += ' (' + code + ')</strong>';
+							text += '<br />Fix: '+prices[code].fix;
+							if (currprice.hasOwnProperty('extfix')) {
+								text += ' ('+currprice.extfix+')';
+							}
+							text += '<br />Mob: '+mobprice;
+							if (currprice.hasOwnProperty('extmob')) {
+								text += ' ('+currprice.extmob+')';
+							}
+							if (currprice.hasOwnProperty('ext2')) {
+								text += '<br/><br/><b>Extension '+currprice.ext2+'</b>';
+							}
+							if (currprice.hasOwnProperty('fix2')) {
+								text += '<br />Fix: '+currprice.fix2;
+								if (currprice.hasOwnProperty('extfix2')) {
+									text += ' ('+currprice.extfix2+')';
+								}
+							}
+							if (currprice.hasOwnProperty('mob2')) {
+								text += '<br />Mob: '+currprice.mob2;
+								if (currprice.hasOwnProperty('extmob2')) {
+									text += ' ('+currprice.extmob2+')';
+								}
+							}
+							label.html(text);
 						} else {
 							label.html('<strong>'+label.html()+'</strong><br />Aun no disponible');
 						}
