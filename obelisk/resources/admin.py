@@ -4,8 +4,6 @@ from twisted.web.resource import Resource
 from twisted.web.util import redirectTo
 
 from obelisk import session
-from obelisk.resources.tinc import TincResource
-from obelisk.resources.dundi import DundiResource
 from obelisk.templates import print_template
 
 import obelisk
@@ -13,8 +11,6 @@ import obelisk
 class AdminResource(Resource):
     def __init__(self):
         Resource.__init__(self)
-        self.putChild("tinc", TincResource())
-        self.putChild("dundi", DundiResource())
 
     def getChild(self, name, request):
         return self
