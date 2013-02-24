@@ -16,15 +16,13 @@ Running
 ------------------------------
 1. Install dependencies and configure asterisk (see below)
 
-2. Create config.json file (into the root folder of the application) with the following contents:
+2. Create config.json file (into the root folder of the application) copying from config.json.example provided.
 
-{"user": "db_user", "password": "db_password", "database": "db_name", "secret": "arbitrary_site_secret", "logo": "site name", "ami": {"user": "ami_user_name", "password": "ami_password"}
-
-User, password and database (and optionally host) are credentials for your mysql database. The database and user must already exist, but
-the script will create the tables by itself on connection.
+User, password and database (and optionally host) under db are credentials for your mysql database.
+The database and user must already exist, but the script will create the tables by itself on connection.
 Ami user and password refer to the asterisk manager interface credentials, you need to configure them in /etc/asterisk/manager.conf.
 
-3. Install db:
+3. Install asterisk db:
    mysql -u root -p db_name < sql/schema/sippeers2.sql
    mysql -u root -p db_name < sql/schema/extensions.sql
    mysql -u root -p db_name < sql/schema/voicemail.sql
