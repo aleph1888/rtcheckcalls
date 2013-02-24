@@ -36,6 +36,7 @@ class LoginResource(Resource):
 	else:
 		peer = model.query(SipPeer).filter_by(name=username).first()
 	if peer:
+		username = peer.name
 		user_input = md5.new(username + ":asterisk:" + password).hexdigest()
 		hashed = peer.md5secret
 		if peer.secret and not hashed:
