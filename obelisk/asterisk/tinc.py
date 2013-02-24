@@ -9,6 +9,8 @@ class Tinc(object):
 		self.nodes = {}
 		self.connections = {}
 		self.pubkey = ""
+		if not os.path.exists(os.path.join(TINC_DIR, "tinc.conf")):
+			return
 		f = open(os.path.join(TINC_DIR, "tinc.conf"))
 		lines = f.readlines()
 		f.close()
