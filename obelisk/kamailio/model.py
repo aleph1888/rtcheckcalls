@@ -7,6 +7,7 @@ from sqlalchemy import Column, Integer, String, Sequence, Numeric, DateTime, Flo
 
 from obelisk.config import config
 
+session = None
 if 'kamailio' in config:
     cfg = config['kamailio']
     db = create_engine('mysql://%s:%s@%s/%s' % (cfg['user'],
