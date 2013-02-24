@@ -1,9 +1,7 @@
 import json
 
-f = open('config.json')
-data = f.read()
-f.close()
-config = json.loads(data)
+with open('config.json') as f:
+	config = json.load(f)
 
 def clean_dict(adict):
 	for key in adict.keys():
@@ -17,7 +15,4 @@ def clean_dict(adict):
 
 
 clean_dict(config)
-
-if not 'host' in config:
-	config['host'] = 'localhost'
 
