@@ -1,0 +1,12 @@
+{"url": "https://voip.lorea.org",
+ "domain": "voip.lorea.org",
+ "logo": "voip.lorea.org",
+ "db": {"user": "obelisk",
+ 	"password": "PASSWORD",
+ 	"database": "obelisk"},
+ "ami": {"user": "python",
+         "password": "PASSWORD"},
+ "kamailio": {"database": "kamailio",
+              "user": "kamailio",
+              "password": "PASSWORD"},
+ "pln": {"name": "voiplorea"}}
