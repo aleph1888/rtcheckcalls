@@ -60,10 +60,11 @@ class Dundi(object):
 				value = pars[1].strip()
 				data[section][key] = value
 				if key == 'outkey' and not self.outkey:
-					f = open(os.path.join(KEYS_DIR, value + '.pub'))
-					key_data = f.read()
-					f.close()
-					self.outkey = key_data
+					if os.path.exists(os.path.join(KEYS_DIR, value + '.pub')):
+						f = open(os.path.join(KEYS_DIR, value + '.pub'))
+						key_data = f.read()
+						f.close()
+						self.outkey = key_data
 		self.config = data
 	def parse_extensions(self):
 		f = open(FILE2)
