@@ -76,11 +76,12 @@ class WebSession(Base):
 
 # only one per application for thread-local storage
 # http://docs.sqlalchemy.org/en/latest/orm/session.html#unitofwork-contextual
-user = config['user']
-password = config['password']
-host = config['host']
-database = config['database']
-engine =create_engine('mysql://%s:%s@%s/%s' % (user, password, host, database))
+cfg = config['db']
+user = cfg['user']
+password = cfg['password']
+host = cfg.get('host', 'localhost')
+database = cfg['database']
+engine =create_engine('mysql://%s:%s@%s/%s' % (user, password, host, database), pool_size=15)
 for a in [User, Call, Charge, WebSession]:
 	a.__table__.mysql_engine='InnoDB'
 	a.__table__.mysql_charset='utf8'
