@@ -69,7 +69,7 @@ class CallMonitor(object):
 		# incoming calls from other providers
 		self._real_to = event['exten']
             self._provider = provider
-	    self.log("call from %s to %s with %s mana remaining (%s)" % (self._from, self._real_to, accounting.get_mana(self._from_exten), self._provider))
+	    self.log("call from %s to %s with %s mana remaining (%s)" % (self._from, self._real_to, accounting.get_credit(self._from_exten), self._provider))
     def on_answer(self, args):
 	    # XXX avoid multiple answers...
 	    if not args['calleridani']:
@@ -102,7 +102,7 @@ class CallMonitor(object):
 			return
 		    self.log("free call, will not be cut")
 		    return
-	    mana = accounting.get_mana(self._from_exten)
+	    mana = accounting.get_credit(self._from_exten)
 	    if not mana or mana < 0.0:
 		    self.cut_call(self._channel, "not enough credit for call")
 	    else:
@@ -119,7 +119,7 @@ class CallMonitor(object):
     def on_chan_start(self, args):
 	    channel = args['channel']
 	    # precut call if user can't pay it
-	    mana = float(accounting.get_mana(self._from_exten))
+	    mana = float(accounting.get_credit(self._from_exten))
 	    if self._cost and (not mana or mana < self._cost):
 		    self.cut_call(channel, "not enough credit")
     def on_hangup(self, args):

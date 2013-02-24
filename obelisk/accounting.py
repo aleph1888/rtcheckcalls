@@ -19,7 +19,7 @@ class Accounting(object):
 				data[user.voip_id] = user.credit
 		return data
 
-	def get_mana(self, user_ext):
+	def get_credit(self, user_ext):
 		user = self.model.get_user_fromext(user_ext)
 		if user:
 			return user.credit
@@ -106,9 +106,9 @@ accounting = Accounting()
 
 if __name__ == '__main__':
 	print accounting.get_data()
-	print accounting.get_mana('816')
+	print accounting.get_credit('816')
 	accounting.reset_credit('816')
 	accounting.add_credit('816', 1.949000)
-	print accounting.get_mana('816')
+	print accounting.get_credit('816')
 	accounting.remove_credit('816', 1.0)
-	print accounting.get_mana('816')
+	print accounting.get_credit('816')
