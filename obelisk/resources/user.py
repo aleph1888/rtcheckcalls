@@ -1,3 +1,4 @@
+import os
 from twisted.web.resource import Resource
 from twisted.web.util import redirectTo
 from datetime import datetime
@@ -94,6 +95,8 @@ class UserResource(Resource):
 
     def render_user_calls(self, user_ext, request):
 	FILE = "/var/log/asterisk/cdr-csv/Master.csv"
+	if not os.path.exists(FILE):
+		return
 	f = open(FILE)
 	csv_file = csv.reader(f)
 	data = list(csv_file)

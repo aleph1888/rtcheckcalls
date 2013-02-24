@@ -131,6 +131,8 @@ def create_user(username, password):
 			maxexten = exten
 
 	nextexten = maxexten + 1
+	if nextexten < 1000:
+		nextexten = 1000;
 
 	# create user in database
 	password = md5.new("%s:asterisk:%s" % (username, password)).hexdigest()

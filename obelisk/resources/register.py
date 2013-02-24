@@ -11,7 +11,7 @@ from obelisk.resources import login
 
 from obelisk.templates import print_template
 
-from obelisk.asterisk.users import create_user
+from obelisk.users import create_user
 
 class RegisterResource(Resource):
     def render_POST(self, request):
