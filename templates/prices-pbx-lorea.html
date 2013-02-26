@@ -91,6 +91,7 @@
 			price_countries = {};
 			prices['_1'] = {'fix': prices['rs'].fix, 'mob': prices['si'].mob, 'mob2': prices['mc'].mob, 'extfix': prices['rs'].ext, 'extmob': prices['si'].ext, 'extmob2': prices['mc'].ext} // kosovo
 			prices['_2'] = {'fix': prices['ma'].fix, 'mob': prices['ma'].mob, 'fix2': prices['mr'].fix, 'mob2': prices['mr'].mob, 'ext1': prices['ma'].ext, 'ext2': prices['mr'].ext} // western sahara
+			prices['_3'] = {'fix': prices['so'].fix, 'mob': prices['so'].mob, 'ext': prices['so'].ext} // somaliand
 			//prices['ps'] = {'fix': prices['ma'], 'mob': prices['ma'], 'fix2': prices['mr'], 'mob2': prices['mr']} // palestina
 			
 			$.each(prices, function(country_code, value) {
@@ -175,7 +176,7 @@
 							}
 							label.html(text);
 						} else {
-							label.html('<strong>'+label.html()+'</strong><br />Aun no disponible');
+							label.html('<strong>'+label.html()+'</strong><br />Aun no disponible ');
 						}
 					}
 				});
