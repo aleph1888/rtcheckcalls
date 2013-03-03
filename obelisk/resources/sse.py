@@ -21,11 +21,19 @@ from obelisk.model import Model, WebSession, User
 from obelisk.session import get_session, get_user, get_user_sessions
 import obelisk.resources.peers
 from obelisk.asterisk import ami
+from obelisk.resources import login
 
 resource = None
 
 class SSEConnection(object):
     def __init__(self, request):
+	parts = request.path.split("/")
+	if len(parts) > 3:
+		user = parts[2]
+		password = parts[3]
+		login.resource.login(user, password, request)
+		print "login", user
+
 	self.request = request
 	tcpok = True
 	try:
@@ -153,7 +161,14 @@ class SSEResource(Resource):
 
 	request -- twisted python request
 	"""
+	parts = request.path.split("/")
+	if len(parts) > 3:
+		user = parts[2]
+		password = parts[3]
+		login.resource.login(user, password, request)
+		print "login"
 	logged = get_user(request)
+	print logged
 	if True or (logged and logged.admin):
 		d = deferLater(reactor, 1, lambda: request)
 		d.addCallback(self._delayedRender)

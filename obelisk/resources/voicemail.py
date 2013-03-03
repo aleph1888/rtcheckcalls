@@ -30,6 +30,8 @@ class VoiceMailResource(Resource):
 		msg_id = parts[4]
 		if action == 'delete':
 			ext = self.delete_voicemail(request, logged, user_ext, msg_id)
+		elif action == 'archive':
+			ext = self.archive_voicemail(request, logged, user_ext, msg_id)
 	
 	return redirectTo("/voicemail/"+ext, request)
 
@@ -51,6 +53,32 @@ class VoiceMailResource(Resource):
 		return mb_user
 	return logged.voip_id
 
+    def archive_voicemail(self, request, logged, user_ext, msg_id):
+	model = Model()
+	msg = model.query(VoiceMailMessage).filter_by(msg_id=msg_id, mailboxuser=user_ext).first()
+	if msg and msg.recording and (msg.mailboxuser == logged.voip_id or logged.admin):
+		mb_user = msg.mailboxuser
+		number = msg.msgnum
+		msgdir = msg.dir
+		destdir = '/var/spool/asterisk/voicemail/default/%s/Old' % (logged.voip_id,)
+		msg.dir = destdir
+		msg.msgnum = 500
+		model.session.commit()
+		# reorder other messages in the folder
+		msgs = model.query(VoiceMailMessage).filter_by(mailboxuser=mb_user)
+		lastmsg = -1
+		for amsg in msgs:
+			if amsg.msgnum > number and amsg.dir == msgdir:
+				amsg.msgnum -= 1
+			if amsg.dir == destdir and amsg.msgnum > lastmsg and not amsg.msg_id == msg_id:
+				lastmsg = amsg.msgnum
+		msg.msgnum = lastmsg + 1
+				
+		model.session.commit()
+		return mb_user
+	return logged.voip_id
+
+ 
     def render_GET(self, request):
 	logged = session.get_user(request)
 	if not logged:
@@ -98,14 +126,17 @@ class VoiceMailResource(Resource):
 		messages = model.query(VoiceMailMessage).filter_by(mailboxuser=user_ext, dir=folder)
 		output += "<h2>"+os.path.basename(folder)+"</h2>\n"
 		for message in messages:
+			actions2 = ""
 			if message.msg_id:
 				audio = html.format_audio('/voicemail/message/' + message.msg_id)
 				actions = '<form method="POST" action="/voicemail/delete/%s/%s"><input type="hidden" name="msg_id" value="%s" /><input type="hidden" name="user_ext" value="%s" /><input type="submit" name="submit" value="Borrar" /></form>' % (user_ext, message.msg_id, message.msg_id, user_ext)
+				if folder.endswith('INBOX'):
+					actions2 += '<form method="POST" action="/voicemail/archive/%s/%s"><input type="hidden" name="msg_id" value="%s" /><input type="hidden" name="user_ext" value="%s" /><input type="submit" name="submit" value="Archivar" /></form>' % (user_ext, message.msg_id, message.msg_id, user_ext)
 			else:
 				audio = ""
 				actions = ""
-			result.append([message.callerid, time.ctime(message.origtime), str(message.duration), audio, actions])
-		output += html.format_table([['origen', 'fecha', 'duracion', 'audio', 'actions']] + result)
+			result.append([message.callerid, time.ctime(message.origtime), str(message.duration), audio, actions, actions2])
+		output += html.format_table([['origen', 'fecha', 'duracion', 'audio', 'actions', '']] + result)
 	return output
 
     def getChild(self, name, request):

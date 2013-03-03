@@ -53,7 +53,7 @@ class CallMonitor(object):
 		self._from_exten = ''
     def log(self, text):
 	    notify_sse(text, 'callmonitor', self._user)
-	    print text
+	    print text, self._user
     def on_app_start(self, event):
 	    self._starttime = 0
             provider = event['appdata'].split("/")
@@ -68,6 +68,7 @@ class CallMonitor(object):
 	    if not self._real_to:
 		# incoming calls from other providers
 		self._real_to = event['exten']
+	    notify_sse({'cost': float(self._cost), 'from': self._from, 'to': self._real_to, 'event': 'start'}, 'call_monitor', self._user)
             self._provider = provider
 	    self.log("call from %s to %s with %s mana remaining (%s)" % (self._from, self._real_to, accounting.get_credit(self._from_exten), self._provider))
     def on_answer(self, args):
@@ -89,6 +90,7 @@ class CallMonitor(object):
 			return
 		    channel = args['channel']
 		    self.log("%s answered on channel %s" % (self._from, channel))
+	    	    notify_sse({'from': self._from, 'to': self._real_to, 'event': 'answer'}, 'call_monitor', self._user)
 		    self._starttime = parse_time(args['eventtime'])
 		    self._channel = channel
 		    self.predict_cut()
@@ -134,6 +136,7 @@ class CallMonitor(object):
 		    self.log("call end %.1f seconds at %s per minute" % (totaltime, self._cost))
             else:
 		    self.log("unsuccesfull call")
+	    	    notify_sse({'from': self._from, 'to': self._real_to, 'event': 'hangup', 'cost': 0}, 'call_monitor', self._user)
 
     def apply_costs(self, totaltime):
 	    if self._from_exten:
@@ -151,6 +154,7 @@ class CallMonitor(object):
 			    totalcost += Decimal('0.001')
 		            # save accounting data
 		    	    accounting.remove_credit(self._from_exten, totalcost)
+	    	    notify_sse({'from': self._from, 'to': self._real_to, 'event': 'hangup', 'cost': float(totalcost), 'duration': totaltime, 'charged': roundedtime}, 'call_monitor', self._user)
                     calls.add_call(self._from_exten, self._real_to, self._starttime, totaltime, roundedtime, totalcost, self._cost, self._provider)
 
 class CallManager(object):
