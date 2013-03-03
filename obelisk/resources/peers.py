@@ -21,7 +21,7 @@ class PeersResource(Resource):
 	self._dundi_peers = {}
 	self._peers = self.get_peers()
 	ami.connector.registerEvent('PeerStatus', self.on_peer_event)
-	reactor.callLater(10, self.get_peers_loop)
+	reactor.callLater(10, reactor.callInThread, self.get_peers_loop)
     def add_ip_href(self, line):
 	ip_start = line.find("192.168.")
 	ip_end = line.find(" ", ip_start)
@@ -62,8 +62,8 @@ class PeersResource(Resource):
 	return dialplan_line[ext_start+1: dialplan_line.find("'", ext_start+1)]
     def get_peers_loop(self):
 	peers = self.get_peers()
-	sse.resource.notify(peers, 'peers' ,'all')
-	reactor.callLater(5, self.get_peers_loop)
+	reactor.callFromThread(sse.resource.notify, peers, 'peers' ,'all')
+	reactor.callLater(5, reactor.callInThread, self.get_peers_loop)
     def get_peers(self):
 	model = Model()
 	output = cli.run_command('sip show peers')

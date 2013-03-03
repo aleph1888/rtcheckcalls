@@ -75,19 +75,19 @@ class RootResource(Resource):
 		self.putChild(pln_name +'.pub', Redirect('/dundi/pubkey'))
 	self.putChild('node.json', Redirect('/pln/node.json'))
 
-	reactor.callLater(1, self.get_winners)
-	reactor.callLater(1, self.get_channel_test)
+	reactor.callLater(2, reactor.callInThread, self.get_winners)
+	reactor.callLater(4, reactor.callInThread, self.get_channel_test)
 	self.channel_tester = TestChannels()
 
     def get_winners(self):
 	get_winners()
-	reactor.callLater(600, self.get_winners)
+	reactor.callLater(600, reactor.callInThread, self.get_winners)
 
     def get_channel_test(self):
-	reactor.callLater(5, self.get_channel_test)
 	test = self.channel_tester.get_rates()
 	if test:
-		sse.resource.notify(test, 'channels', 'all')
+		reactor.callFromThread(sse.resource.notify, test, 'channels', 'all')
+	reactor.callLater(5, reactor.callInThread, self.get_channel_test)
 
     def getChild(self, name, request):
         return self
