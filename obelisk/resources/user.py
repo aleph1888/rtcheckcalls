@@ -3,6 +3,7 @@ from twisted.web.resource import Resource
 from twisted.web.util import redirectTo
 from datetime import datetime
 import csv
+import json
 
 from obelisk.accounting import accounting
 from obelisk.asterisk.users import parse_users
@@ -11,7 +12,7 @@ from obelisk import charges
 from obelisk import calls
 from obelisk import session
 
-from obelisk.model import Model
+from obelisk.model import Model, User
 from obelisk.asterisk.model import SipPeer
 
 from obelisk.templates import print_template
@@ -32,7 +33,14 @@ class UserResource(Resource):
 		res = args['account']
 	else:
 		parts = request.path.split("/")
-		if len(parts) > 2:
+		if len(parts) > 5 and logged and (logged.voip_id == parts[3] or logged.admin == 1):
+			section = parts[2]
+			user = parts[3]
+			offset = parts[4]
+			limit = parts[5]
+			if section == 'json':
+				return self.render_user_accounting(logged, user, request, offset, limit)
+		elif len(parts) > 2:
 			user = parts[2]
 			if user == 'accounts':
 				res = self.render_accounts(request)
@@ -51,17 +59,42 @@ class UserResource(Resource):
 	logged = session.get_user(request)
 	if not logged or not logged.admin:
 		return redirectTo("/", request)
-	data = self._accounting.get_data()
+	model = Model()
+	all_users = model.query(User)
 	total_credit = Decimal()
-	users = parse_users()
-	for ext, credit in data.items():
-		username = "unknown"
-		if ext in users:
-			username = users[ext]
+	for user in all_users:
+		ext = user.voip_id
+		credit = user.credit
+		peer = model.query(SipPeer).filter_by(regexten=ext).first()
+		if peer and peer.name:
+			username = peer.name
+		else:
+			username = "desconocido"
+		
 		res += "<p>%s <a href='/user/%s'>%s</a> %.3f</p>" % (str(ext), str(ext), str(username), credit)
 		total_credit += Decimal(credit)
 	res += "<p>total credit: %s</p>" % (total_credit,)
 	return res
+
+    def render_user_accounting(self, logged, user_ext, request, offset, limit):
+	user_calls = json.dumps(calls.get_calls(user_ext, logged, int(limit), int(offset), 'json'))
+	request.setHeader('Content-Type', 'application/json')
+	return user_calls
+
+    def render_pager(self, user_ext, elements):
+	text = ""
+	if elements < 10:
+		return ""
+	iters = range(elements/10)
+	if elements%10:
+		iters.append(len(iters))
+	for i in xrange(elements/10):
+		if i == 0:
+			selected = "class='row_selected'"
+		else:
+			selected = ""
+		text += "<a id='accounting_%s' %s href='javascript:load_calls(\"%s\",%s,%s)'>%s</a> " % (i, selected, user_ext, i*10, (i+1)*10, i+1)
+	return text
 
     def render_user(self, user_ext, request):
 	model = Model()
@@ -76,7 +109,10 @@ class UserResource(Resource):
 	if user:
 		credit = "%.3f" % (user.credit,)
 		user_charges = charges.get_charges(user_ext)
-		user_calls = calls.get_calls(user_ext, logged)
+		n_calls = len(user.calls)
+		pager = self.render_pager(user_ext, n_calls)
+		user_calls = calls.get_calls(user_ext, logged, 10) + "<p>%s</p>" % (pager,)
+
 		creditlink = ""
 		if user.credit > 0:
 			if user.voip_id == logged.voip_id:
