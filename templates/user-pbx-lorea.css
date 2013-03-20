@@ -13,6 +13,13 @@ body{
 
 }
 
+.row_selected {
+	font-size: 1.1em;
+	background-color: 'FF6666';
+	color: black;
+	text-decoration: none;
+}
+
 #header {
 	color: #ddd;
 	text-shadow: 0px 0px 7px #1FF;
