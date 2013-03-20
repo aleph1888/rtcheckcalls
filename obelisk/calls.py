@@ -4,14 +4,21 @@ from datetime import datetime
 
 from obelisk.model import Model, Call, User, Provider
 
-def get_calls(user_ext, logged):
+def get_calls(user_ext, logged, limit=0, offset=0, format='html'):
 	model = Model()
 	user = model.get_user_fromext(user_ext)
 	if not user:
 		return ""
 
-	res = ""
-	for call in user.calls:
+	if format == 'html':
+		res = ""
+	else:
+		res = []
+	all_calls = user.calls
+	last = len(all_calls)
+	if limit and len(user.calls) > limit + offset:
+		all_calls = user.calls[last-offset-limit:last-offset]
+	for call in all_calls:
 		destination = call.destination
 		date = call.timestamp
 		duration = call.duration
@@ -22,11 +29,19 @@ def get_calls(user_ext, logged):
 			provider = call.provider.name
 		else:
 			provider = 'unknown'
+		pars = [date, destination, duration, cost, rate]
 		if logged and logged.admin:
-			res = ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%.3f</td><td>%.3f</td><td>%s</td></tr>\n" % (date, destination, duration, cost, rate, provider)) + res
+			pars.append(provider)
+			if format == 'html':
+				res = ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%.3f</td><td>%.3f</td><td>%s</td></tr>\n" % tuple(pars)) + res
 		else:
-			res = ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%.3f</td><td>%.3f</td></tr>\n" % (date, destination, duration, cost, rate)) + res
-
+			if format == 'html':
+				res = ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%.3f</td><td>%.3f</td></tr>\n" % tuple(pars)) + res
+		if format == 'json':
+			pars[0] = str(pars[0])
+			pars[3] = float(pars[3])
+			pars[4] = float(pars[4])
+			res = [pars] + res
 	return res
 
 def add_call(user_ext, destination, date, real_duration, duration, cost, rate, provider_name):
