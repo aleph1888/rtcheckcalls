@@ -22,7 +22,11 @@ def check_prices():
 	countries = prices.keys()
 	countries.sort()
 	counters = defaultdict(int)
+	output += 'remember rs has no prices (new republic of serbia)\n'
 	for country in countries:
+		if country == 'rs':
+			# we have a warning above... known problem XXX
+			continue
 		for type in prices[country]:
 			current_rate, provider_code, ext = prices[country][type]
 			if provider_code in providers:
@@ -39,8 +43,10 @@ def check_prices():
 					all_prices = []
 					all_providers = set()
 					for name in names:
-						if name in ['freevoipdeal2', 'freevoipdeal3']:
+						if name[:-1] in ['freevoipdeal']:
 							name = 'freevoipdeal'
+						if name[:-1] in ['budgetvoip']:
+							name = 'budgetvoip'
 						all_providers.add(name)
 						# XXX check if prices are the same for given country...
 						provider_prices = load_provider(name)
