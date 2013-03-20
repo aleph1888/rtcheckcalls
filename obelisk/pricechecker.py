@@ -51,7 +51,7 @@ providers['cheapvoip']="http://www.cheapvoip.com/rates"
 providers['freecall']="http://www.freecall.com/rates"
 providers['powervoip']="http://www.powervoip.com/calling-rates.html"
 providers['hotvoip']="http://www.hotvoip.com/rates"
-providers['voipyo']="http://voipyo.com/rates"
+#providers['voipyo']="http://voipyo.com/rates" # has no sip...
 providers['terrassip']="http://www.terrasip.com/index.php?seite=tarife4&t_country=gb&language=gb&t_lang=en"
 providers['budgetvoip']="http://www.budgetvoip.com/en/rates/"
 codes = {}
