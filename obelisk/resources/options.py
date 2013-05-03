@@ -8,6 +8,7 @@ from obelisk.model import Model
 from obelisk.templates import print_template
 from obelisk.asterisk.users import change_options, get_options
 from obelisk.session import get_user
+import wallet
 
 class OptionsResource(Resource):
     def render_POST(self, request):
@@ -58,6 +59,7 @@ class OptionsResource(Resource):
 		args['srtp'] = ' checked '
 	if options['voicemail']:
 		args['voicemail'] = ' checked '
+        args['bitcoin'] = wallet.get_address(logged.id)
 	content = print_template('options', args)
 	return print_template('content-pbx-lorea', {'content': content})
 
