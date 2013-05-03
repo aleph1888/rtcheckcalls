@@ -11,7 +11,7 @@ from obelisk.resources import sse
 
 from obelisk.model import Model, User, Wallet
 
-from obelisk.cypher import check_signature
+from cypher import check_signature
 from obelisk.config import config
 
 

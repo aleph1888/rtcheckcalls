@@ -12,6 +12,7 @@ from decimal import Decimal
 
 from obelisk.config import config
 
+from wallet import get_address
 
 class User(Base):
 	__tablename__ = 'users'
@@ -27,7 +28,7 @@ class User(Base):
             # get receiving btc address
             return get_address(self.id)
 
-        def update_address(self, model):
+        def update_wallet(self, model):
             # create the wallet if needed
             if not len(self.wallets):
                 wallet = Wallet(self)
