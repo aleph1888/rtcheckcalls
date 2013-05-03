@@ -23,6 +23,17 @@ class User(Base):
 	email = Column(String(128))
 	email_validated = Column(Boolean, default=False)
 
+        def get_address(self):
+            # get receiving btc address
+            return get_address(self.id)
+
+        def update_address(self, model):
+            # create the wallet if needed
+            if not len(self.wallets):
+                wallet = Wallet(self)
+                model.session.add(wallet)
+                model.session.commit()
+
 	def __init__(self, voip_id):
 		self.voip_id = voip_id
 		self.credit = Decimal()

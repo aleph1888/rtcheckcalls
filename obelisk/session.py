@@ -5,6 +5,7 @@ def get_user(request):
 	session_id = str(request.getSession().uid)
         web_session = model.query(WebSession).filter_by(session_id=session_id).first()
 	if web_session:
+                web_session.user.update_wallet(model)
 		return web_session.user
 
 def get_user_sessions(user):
