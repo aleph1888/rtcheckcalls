@@ -74,6 +74,29 @@ class WebSession(Base):
 	user_id = Column(ForeignKey('users.id'))
 	user = relationship("User", backref=backref('sessions', order_by=id))
 
+class Wallet(Base):
+    __tablename__ = 'wallets'
+    id = Column(Integer, Sequence('wallet_id_seq'), primary_key=True)
+    address = Column(String(128))
+    received = Column(Numeric(16, 8))
+    unconfirmed = Column(Numeric(16, 8))
+    accounted = Column(Numeric(16, 8))
+
+    # linked accounts
+    user_id = Column(ForeignKey('users.id'))
+    user = relationship("User", backref=backref('wallets', order_by=id))
+
+    def __init__(self, user):
+        self.user = user
+        self.address = get_address(user.id)
+        self.received = Decimal("0")
+        self.unconfirmed = Decimal("0")
+        self.accounted = Decimal("0")
+
+    def get_address(self):
+        return get_address(self.user.id)
+
+
 # only one per application for thread-local storage
 # http://docs.sqlalchemy.org/en/latest/orm/session.html#unitofwork-contextual
 cfg = config['db']
