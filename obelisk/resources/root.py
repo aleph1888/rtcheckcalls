@@ -25,6 +25,7 @@ from obelisk.resources.admin import AdminResource
 from obelisk.resources.tinc import TincResource
 from obelisk.resources.dundi import DundiResource
 from obelisk.resources.pln import PLNResource
+from obelisk.resources.btcin import BtcInResource
 from obelisk.templates import print_template
 from obelisk.pricechecker import get_winners
 
@@ -69,6 +70,7 @@ class RootResource(Resource):
         self.putChild("tinc", TincResource())
         self.putChild("dundi", DundiResource())
         self.putChild("pln", PLNResource())
+        self.putChild("btcin", BtcInResource())
 	if 'pln' in obelisk.config.config:
 		pln_name = obelisk.config.config['pln']['name']
 		self.putChild(pln_name, Redirect('/tinc/pubkey'))
