@@ -1,6 +1,6 @@
 <form method='POST' action='/btcin/convert' id='btc_form' style="display:none;">
 <p>
-%%ticker%% * <input id="amount_btc" type="text" name="amount" size="5" value="%%pending%%"></input> 
+%%ticker%% * <input id="amount_btc" type="text" name="amount" size="5" value="%%pending%%" autocomplete="off"></input> 
  = <span id='btc'></span>
 </p>
 <input type="submit" value="Convertir" id="convert_submit"></input>
@@ -23,7 +23,7 @@
                  total = 'demasiado';
                  $('#convert_submit').attr('disabled', 'disabled');
               } else if (amount <= 0.0) {
-                 total = '-';
+                 total = 'x';
                  $('#convert_submit').attr('disabled', 'disabled');
               } else {
                  total = (amount * price).toFixed(3);
