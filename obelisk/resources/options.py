@@ -74,6 +74,8 @@ class OptionsResource(Resource):
         address = wallet.get_address(user.id)
         qr = ' <a href="https://blockchain.info/qr?data=%s&size=300">[qr]</a>' % (address,)
         bitcoin = '<b>' + address + '</b>' + qr
+        if not user.wallets:
+            return bitcoin
         user_wallet = user.wallets[0]
         if user_wallet.received or user_wallet.unconfirmed:
             pending = float(user_wallet.received - user_wallet.accounted)
