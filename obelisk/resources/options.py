@@ -8,6 +8,7 @@ from obelisk.model import Model
 from obelisk.templates import print_template
 from obelisk.asterisk.users import change_options, get_options
 from obelisk.session import get_user
+from obelisk.model import Model, User
 import wallet
 
 class OptionsResource(Resource):
@@ -59,7 +60,18 @@ class OptionsResource(Resource):
 		args['srtp'] = ' checked '
 	if options['voicemail']:
 		args['voicemail'] = ' checked '
-        args['bitcoin'] = wallet.get_address(logged.id)
+        model = Model()
+        user = model.query(User).filter_by(voip_id=user_ext).first()
+        if user and (logged.admin or user.id == logged.id):
+            bitcoin = wallet.get_address(user.id)
+            user_wallet = user.wallets[0]
+            if user_wallet.received or user_wallet.unconfirmed:
+                bitcoin += "<br />" + str(user_wallet.received) + " recibidos"
+                if user_wallet.unconfirmed:
+                    bitcoin += " (" + str(user_wallet.unconfirmed) + " sin confirmar)"
+            args['bitcoin'] = bitcoin
+        else:
+            return redirectTo('/', request)
 	content = print_template('options', args)
 	return print_template('content-pbx-lorea', {'content': content})
 
