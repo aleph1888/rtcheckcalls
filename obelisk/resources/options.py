@@ -71,7 +71,9 @@ class OptionsResource(Resource):
 	return print_template('content-pbx-lorea', {'content': content})
 
     def render_btc(self, logged, user, wallet):
-        bitcoin = '<b>'+wallet.get_address(user.id)+'</b>'
+        address = wallet.get_address(user.id)
+        qr = ' <a href="https://blockchain.info/qr?data=%s&size=300">[qr]</a>' % (address,)
+        bitcoin = '<b>' + address + '</b>' + qr
         user_wallet = user.wallets[0]
         if user_wallet.received or user_wallet.unconfirmed:
             pending = float(user_wallet.received - user_wallet.accounted)
