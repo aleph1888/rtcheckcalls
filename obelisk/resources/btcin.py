@@ -30,8 +30,8 @@ class BtcInResource(Resource):
         amount = Decimal(request.args['amount'][0])
         wallet = logged.wallets[0]
         pending = wallet.received - wallet.accounted
-        if amount > pending or not float(pending) > 0:
-            return redirectTo('/', request)
+        if float(amount) < 0 or amount > pending or float(pending) <= 0:
+            return redirectTo('/options/'+logged.voip_id, request)
         price = Decimal("%.3f" % (ticker.price,))
         new_credit = amount * price
 
