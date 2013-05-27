@@ -4,13 +4,13 @@ from twisted.web.util import redirectTo
 from datetime import datetime
 
 import json
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 import time
 import math
 from decimal import Decimal
 
 from obelisk.config import config
-from obelisk.model import Model, WebSession, User, Call, Charge
+from obelisk.model import Model, WebSession, User, Call, Charge, Wallet
 from obelisk.templates import print_template
 from obelisk.tools import host_info
 from obelisk import session
@@ -134,10 +134,13 @@ class StatsResource(Resource):
 		else:
 			total_free += duration
 			free_calls += 1
+        model = Model()
+        btc_received = model.query(func.sum(Wallet.received)).scalar()
+        #btc_unconfirmed = model.query(func.sum(Wallet.unconfirmed)).scalar()
 	res += "<p>Minutos con coste: %s</p>\n" % (total/60,)
 	res += "<p>Minutos gratis: %s</p>\n" % (total_free/60,)
 	res += "<p>Llamadas: %s Gratis: %s Con coste: %s</p>\n" % (calls.count(), free_calls, cost_calls)
-	res += "<p>Coste total %.3f Beneficio %.3f</p>\n" % (total_cost, total_benefit)
+	res += "<p>Coste total %.3f Beneficio %.3f</p><p>btc: %.3f</p>\n" % (total_cost, total_benefit, float(btc_received))
 	return res
 
 
