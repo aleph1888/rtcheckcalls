@@ -1,6 +1,8 @@
 import json
 import urllib2
 from twisted.internet import reactor
+from twisted.web.client import getPage
+
 import traceback
 import random
 
@@ -8,34 +10,37 @@ price = 50.0
 mins = 30
 
 def from_mtgox():
-    u = urllib2.urlopen('http://data.mtgox.com/api/1/BTCEUR/ticker')
-    data = json.loads(u.read())
-    u.close()
-    return data
+    d = getPage('http://data.mtgox.com/api/1/BTCEUR/ticker')
+    return d
 
 def parse_results(data):
     if data['result'] == 'success':
         values = data['return']
         return float(values['buy']['value'])
-      
-def ticker_thread():
+
+def wait_and_tick(err=None):
+   reactor.callLater(60*mins+random.randint(0, 60*mins), ticker)
+     
+def ticker_update(data):
     global price
-    print "start thread"
+    data = json.loads(data)
+    price = parse_results(data)
+    print "ticker update", price
+
+def ticker():
+    global price
     try:
-        data = from_mtgox()
-        price = parse_results(data)
+        d = from_mtgox()
+        d.addCallback(ticker_update)
+        d.addCallback(wait_and_tick)
+        d.addErrback(wait_and_tick)
     except:
         # call each 
         print "Problems on ticker"
         traceback.print_exc()
-    # mins to mins*2 minutes
-    reactor.callLater(60*mins+random.randint(0, 60*mins), ticker)
-    print "end thread", price
-
-def ticker():
-    reactor.callInThread(ticker_thread)
+        wait_and_tick()
 
 if __name__ == '__main__':
-    reactor.callLater(5, ticker)
+    ticker()
     reactor.run()
 
