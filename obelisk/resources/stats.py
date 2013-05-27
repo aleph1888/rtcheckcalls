@@ -137,6 +137,7 @@ class StatsResource(Resource):
         model = Model()
         btc_received = model.query(func.sum(Wallet.received)).scalar()
         btc_unconfirmed = model.query(func.sum(Wallet.unconfirmed)).scalar()
+        btc_accounted = model.query(func.sum(Wallet.accounted)).scalar()
         if btc_unconfirmed:
             unconfirmed = '(+%.3f)' % (float(btc_unconfirmed), )
         else:
@@ -144,7 +145,8 @@ class StatsResource(Resource):
 	res += "<p>Minutos con coste: %s</p>\n" % (total/60,)
 	res += "<p>Minutos gratis: %s</p>\n" % (total_free/60,)
 	res += "<p>Llamadas: %s Gratis: %s Con coste: %s</p>\n" % (calls.count(), free_calls, cost_calls)
-	res += "<p>Coste total %.3f Beneficio %.3f</p><p>btc: %.3f %s</p>\n" % (total_cost, total_benefit, float(btc_received), unconfirmed)
+	res += "<p>Coste total %.3f Beneficio %.3f</p>" % (total_cost, total_benefit)
+        res += "<p>btc in: %.3f %s out: %.3f</p>\n" % (float(btc_received), unconfirmed, float(btc_accounted))
 	return res
 
 
