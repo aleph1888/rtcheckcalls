@@ -9,6 +9,7 @@ from obelisk.templates import print_template
 from obelisk.asterisk.users import change_options, get_options
 from obelisk.session import get_user
 from obelisk.model import Model, User
+from obelisk.tools import ticker
 import wallet
 
 class OptionsResource(Resource):
@@ -63,17 +64,25 @@ class OptionsResource(Resource):
         model = Model()
         user = model.query(User).filter_by(voip_id=user_ext).first()
         if user and (logged.admin or user.id == logged.id):
-            bitcoin = wallet.get_address(user.id)
-            user_wallet = user.wallets[0]
-            if user_wallet.received or user_wallet.unconfirmed:
-                bitcoin += "<br />" + str(user_wallet.received) + " recibidos"
-                if user_wallet.unconfirmed:
-                    bitcoin += " (" + str(user_wallet.unconfirmed) + " sin confirmar)"
-            args['bitcoin'] = bitcoin
+            args['bitcoin'] = self.render_btc(logged, user, wallet)
         else:
             return redirectTo('/', request)
 	content = print_template('options', args)
 	return print_template('content-pbx-lorea', {'content': content})
+
+    def render_btc(self, logged, user, wallet):
+        bitcoin = '<b>'+wallet.get_address(user.id)+'</b>'
+        user_wallet = user.wallets[0]
+        if user_wallet.received or user_wallet.unconfirmed:
+            pending = float(user_wallet.received - user_wallet.accounted)
+            bitcoin += "<br />Saldo: %.4f" % (pending,)
+            if user_wallet.unconfirmed:
+                bitcoin += " (" + str(user_wallet.unconfirmed) + " sin confirmar)"
+            if pending > 0:
+                bitcoin += "<br />"
+                bitcoin += print_template('bitcoin-trade', {'ticker': str(ticker.price),
+                                          'pending': str(pending)})
+        return bitcoin
 
     def getChild(self, name, request):
         return self

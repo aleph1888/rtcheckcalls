@@ -12,14 +12,39 @@ from obelisk.resources import sse
 from obelisk.model import Model, User, Wallet
 
 from obelisk.tools.cypher import check_signature
+from obelisk.accounting import accounting
 from obelisk.config import config
+from obelisk.tools import ticker
+from obelisk import session
 
 
 class BtcInResource(Resource):
     def __init__(self):
         Resource.__init__(self)
 
+    def apply_convert(self, request):
+        # wont work if other uses tries to do it.. maybe better for safety
+	logged = session.get_user(request)
+        if not logged:
+            return redirectTo('/', request)
+        amount = Decimal(request.args['amount'][0])
+        wallet = logged.wallets[0]
+        pending = wallet.received - wallet.accounted
+        if amount > pending or not float(pending) > 0:
+            return redirectTo('/', request)
+        price = Decimal("%.3f" % (ticker.price,))
+        new_credit = amount * price
+
+        # start applying
+        model = Model()
+        accounting.add_credit(logged.voip_id, new_credit, '%.4f btc @ %.4f' % (float(amount), float(price)))
+        wallet.accounted += amount
+        model.session.commit()
+        return redirectTo('/options/'+logged.voip_id, request)
     def render_POST(self, request):
+        parts = request.path.split('/')
+        if len(parts) > 2 and parts[2] == 'convert':
+            return self.apply_convert(request)
         signed_data = request.args['data'][0]
         if not 'fingerprint' in config:
             return 'daemon not configured'

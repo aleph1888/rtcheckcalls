@@ -34,6 +34,7 @@ from obelisk.asterisk import ami
 
 from obelisk.testchannels import TestChannels
 from obelisk.resources import sse
+from obelisk.tools import ticker
 
 from obelisk import session
 
@@ -80,6 +81,8 @@ class RootResource(Resource):
 	reactor.callLater(2, reactor.callInThread, self.get_winners)
 	reactor.callLater(4, reactor.callInThread, self.get_channel_test)
 	self.channel_tester = TestChannels()
+        # start running the ticker
+        ticker.ticker()
 
     def get_winners(self):
 	get_winners()

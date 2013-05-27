@@ -1,0 +1,32 @@
+<form method='POST' action='/btcin/convert'>
+<p>
+%%ticker%% * <input id="amount_btc" type="text" name="amount" size="5" value="%%pending%%"></input> 
+ = <span id='btc'></span>
+</p>
+<input type="submit" value="Convertir" id="convert_submit"></input>
+</form>
+<script type='text/javascript'>
+    $(document).ready(function() {
+        var price = %%ticker%%;
+        var prev = %%pending%%;
+        $('#btc').text((price*prev).toFixed(3));
+        $('#amount_btc').keyup(function(){
+            var data = $('#amount_btc').val();
+            var total;
+            if (isNaN(data)) {
+                 $('#convert_submit').attr('disabled', 'disabled');
+                 total = 'NaN';
+            } else {
+              var amount = parseFloat(data);
+              if (amount > prev) {
+                 total = 'demasiado';
+                 $('#convert_submit').attr('disabled', 'disabled');
+              } else {
+                 total = (amount * price).toFixed(3);
+                 $('#convert_submit').removeAttr('disabled');
+              }
+            }
+            $('#btc').text(total);
+        });
+    })
+</script>
