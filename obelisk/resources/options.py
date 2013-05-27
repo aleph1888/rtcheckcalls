@@ -72,7 +72,7 @@ class OptionsResource(Resource):
 
     def render_btc(self, logged, user, wallet):
         address = wallet.get_address(user.id)
-        qr = ' <a href="https://blockchain.info/qr?data=%s&size=300">[qr]</a>' % (address,)
+        qr = ' <a href="https://blockchain.info/qr?data=%s&size=300"><img src="/tpl/images/qr.png" /></a>' % (address,)
         bitcoin = '<b>' + address + '</b>' + qr
         if not user.wallets:
             return bitcoin
