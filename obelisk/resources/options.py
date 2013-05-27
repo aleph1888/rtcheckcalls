@@ -74,10 +74,8 @@ class OptionsResource(Resource):
         address = wallet.get_address(user.id)
         qr = ' <a href="https://blockchain.info/qr?data=%s&size=300"><img src="/tpl/images/qr.png" /></a>' % (address,)
         bitcoin = '<b>' + address + '</b>' + qr
-        if not user.wallets:
-            return bitcoin
-        user_wallet = user.wallets[0]
-        if user_wallet.received or user_wallet.unconfirmed:
+        if user.wallets and (user.wallets[0].received or user.wallets[0].unconfirmed):
+            user_wallet = user.wallets[0]
             pending = float(user_wallet.received - user_wallet.accounted)
             bitcoin += "<br />Saldo: %.4f" % (pending,)
             if user_wallet.unconfirmed:
@@ -86,6 +84,8 @@ class OptionsResource(Resource):
                 bitcoin += "<br />"
                 bitcoin += print_template('bitcoin-trade', {'ticker': str(ticker.price),
                                           'pending': str(pending)})
+        else:
+            bitcoin += '<p>Puedes enviar fondos a la direccion bitcoin de tu cuenta para recargar credito.</p>'
         return bitcoin
 
     def getChild(self, name, request):
