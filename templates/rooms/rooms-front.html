@@ -1,0 +1,210 @@
+
+
+	<script src="tpl/rooms/js/jquery.js"></script>
+	<script src="tpl/rooms/js/jstree/jquery.jstree.js"></script>
+
+	<script src="tpl/rooms/js/roomsTree.js"></script>
+	<script src="tpl/rooms/js/roomsData.js"></script>
+	<script src="tpl/rooms/js/roomsAMI.js"></script>
+
+	<script Language=Javascript>
+		var bIsStarted;
+		$(document).ready(function () {
+			
+			hideEveryThing();
+			stActionTOstate = '%%ActionTOSTATE%%'
+			initializeTree('%%codFilterTreeType%%%%codFilterTreeId%%'); //cat9999 or room9999
+			initializeAMI();
+			console.log("done");
+			}
+		); // document.load
+	</script>
+
+	
+				<section id="secTree" name="secTree">
+					<h2>SALAS</h2>
+					<form id="frmTree" name="frmTree" method='POST'>
+			
+						<div id="divSearch">
+							<input style="margin-top:10px;" id="txtSearch" size="21" id="txtSearch" type="search" > 
+							<input class="btn" name='btSearch' type='button' value='Buscar' onclick="sendNewRoomCategory();"/>
+
+														
+								<select style="width:40;" id="codCategoryFilterView" name="codCategoryFilterView" onchange="CategoryFilterSubmit(this);">
+								<option selected value=-1>Todas las categor&iacute;as</option>  
+								%%listCATEGVIEW%%
+								</select>
+								&nbsp;Filtrar
+						</div>	
+			
+					
+						
+						<!--Tree Buttons if room:enabled; if category:hidden-->
+						
+						<input id='hidfrmTreeShowButton' class="btn" type='button' value='Ver'  style="display:none"  onclick="sendShowTree();"/>
+						<br><br>
+						
+						<!--Starts diplay:none to avoid visual flashing. Display:inline on handler of event jsTree.loaded-->
+						<div id="divTree" name="divTree" style="display:none;">
+							<div id="myjsTree" >
+								%%treeUL%%
+							</div>
+						</div>	
+						<br>		
+						
+						<!--form hidden controls-->
+						<input type="hidden" id="hidfrmTreeAction" name="hidfrmTreeAction" value="READ">	
+						<input type="hidden" id="hidfrmTreeCodCategory" name="hidfrmTreeCodCategory" value="0">
+						<input type="hidden" id="hidfrmTreeIdRoom" name="hidfrmTreeIdRoom" value="0">
+						<div>
+						<p>Selecciona un categoría en el árbol para asignarle la nueva categoría. 
+						<input style="margin-top:10px;" id="txtNewCategory" size="21" name="txtNewCategory" type="text" > 
+						<input class="btn" id='btNewCategory' name='btNewCategory' type='button' value='Nueva Categoría' onclick="sendNewRoomCategory();"/>
+						</div>
+						<p id="infoarea" style="color:red;">%%info%%</p>
+					</form>
+				
+				</section>     
+	       		</div>
+			<br><br>
+			<section id="secViews" name="secViews">
+					<form id="frmMyView" name="frmMyView" method='POST' action='/rooms'>
+						<h2>MIS SALAS</h2>
+							<p>En esta sección puedes obtener información sobre lore ipsum. Lore, lore. En esta sección puedes obtener información sobre lore ipsum. Lore, lore. En esta sección puedes obtener información sobre lore ipsum. Lore, lore. En esta sección puedes obtener información sobre lore ipsum. Lore, lore.</p><p>En esta sección puedes obtener información sobre lore ipsum. Lore, lore.</p><br><br>
+							<input id='hidfrmTreeNewButton' class="btn" type='button' value='Nueva sala' style="display:none" onclick="initializeData('NEW');"/>			<br><br>
+							<table width="500" border=0>
+								<thead>
+									<tr>
+										<td height="3" width="55">&nbsp;</td>
+										<td width="175"><b>Sala</b></td>
+										<td width="50"><b>Extensi&oacute;n</b></td> 
+										<td width="80"><b>Categorías</b></td>
+										<td width="15"><b>P&uacute;b</b></td>
+										<td width="15"><b>Inic</b></td>
+										<td width="15"><b>N</b></td>
+									</tr>
+									<tr  height="1" >
+										<td colspan="7"  style="background: red" height="1"></td>
+									</tr>
+								</thead>
+								<tbody>
+									%%myViewROOMS%%
+									<input type="hidden" id="hidfrmMyViewAction" name="hidfrmMyViewAction" value="READ">
+									<input type="hidden" id="hidfrmMyViewIdRoom" name="hidfrmMyViewIdRoom">
+									<tr><td colspan="7"><br><textarea style="width:490px" id="txtEvents" name="txtEvents" readonly cols=70 rows=15>(info de los eventos)</textarea></td></tr>
+									
+								</tbody>
+							</table>				
+					</form>
+					
+					
+				</section> 
+				<section id="secRoomForm" name="secRoomForm" >	
+	<form id="frmRoomView" name="frmRoomView" method='POST' action='/rooms'>	
+		<div id="divRoomView" style="display:none;">
+			<a href="javascript:void(0);" onclick="initializeData('READ');">Mis salas</a>
+				<h2>Sala %%RoomName%%</h2>
+	 			<!-- READ MODE-->			
+			   	<table border=0 cellpadding=5>
+					<tr height="10">
+						<td with="100"><b>Nombre:</b></td>
+						<td with="300">%%RoomName%% </td>						
+						<td rowspan=4> 	
+						<select name="lstUsers" id="lstUsers" size="8" style="width:140px;" multiple="multiple" onchange="setUserButtons();">	
+								%%listUsersInRoom%%	
+							</select>
+						
+							<div id="divUserButtons">
+								<input id='botRoomUserKick' class="btn" type='button' value='Echar' onclick="execAMIactionUsr('ConfbridgeKick');"/>
+								<input id='botRoomUserMute' class="btn" type='button' value='Mute' onclick="execAMIactionUsr('ConfbridgeMute');"/>				
+							</div>
+							
+					</tr>
+					<tr height="10">
+						<td with="100"><b>Extensi&oacute;n:</b></td>
+						<td with="300">%%RoomExtension%%</td>
+					</tr>
+					<tr height="10">
+			    			<td><b>PIN: (%%nSecretPin%%)</b></td>
+						<td>%%imgPublicVisibility%%%%imgPrivateVisibility%%</td>
+					</tr>
+					<tr>
+			    			<td>&nbsp;</td>
+						<td>&nbsp;</td>
+					</tr>
+					</table>	
+
+			
+					<!-- Main info output-->
+				<br><br>	
+			<input id='hidfrmTreeEditButton' class="btn" type='button' value='Editar' style="display:none"  onclick="sendEditTree();"/>
+			<input id='hidfrmTreeDelButton'  class="btn" type='button' value='Borrar'  style="display:none"  onclick="sendDelTree();"/>
+			
+			<input id='botRoomLock' 	 class="btn" type='button' roomState="%%roomState%%" value='Bloquear Sala' onclick="execAMIactionRoomLock();"/>			<br><br>
+			<input id='botRoomRec' class="btn" type='button' recordingState="OFF" value='Iniciar grabación' onclick="execAMIactionRoomRec();"/>&nbsp<span id="recInfo" ><img src='tpl/rooms/img/recordingOFF.gif' width=26>&nbsp;Las grabaciones ocupan espacio en el servidor. Graba con responsabilidad.</span><br><br>
+			<h6>Grabaciones de la sala</h6>
+			<table border =0 cellpadding=7	id="tdRecordedList">%%listRecordedFiles%%</table>	
+
+		</div>
+		<input type="hidden" id="hidfrmRoomViewAction" name="hidfrmRoomViewAction" value="">
+		<input type="hidden" id="hidfrmRoomViewRecording" name="hidfrmRoomViewRecording" value-1>
+		<input type="hidden" id="hidfrmRoomViewIdRoom" name="hidfrmRoomViewIdRoom" value=%%idRoom%%>
+
+
+	</form>
+	<div id="divRoomData" style="display:none;" >
+		<form id="frmRoomData" name="frmRoomData" method='POST' action='/rooms'>
+			<a href="javascript:void(0);" onclick="initializeData('READ');">Mis salas</a>
+			<h2>Sala %%RoomName%%</h2>
+
+			<!-- EDIT DELETE MODE-->			
+		   	<table>
+				<tr>
+					<td with="100">Nombre:</td>
+					<td with="300"> <input id='name' name='name' type='text' value='%%RoomName%%'></td>
+				</tr>
+				<tr>
+		    			<td>PIN: </td>
+					<td>	
+						<select id="cmbVisibility" name="cmbVisibility" onchange="javascript:visibilityChangingUI();">
+							<option  %%cmbPublicVisibility%% value=0>Publica</option>
+							<option  %%cmbPrivateVisibility%% value=1>Privada</option>    
+						</select>
+						<input id='secretpin' name='secretpin' onblur="isNumeric(this);" maxlength='4' size='1' type='text' value=%%nSecretPin%% %%stSecretPinDisabled%% />
+					</td>					
+				</tr>				
+				<tr>
+					<td>Categor&iacute;a: </td>
+					<td> 	
+						<select id="codCategory" name="codCategory">
+							%%listCATEG%%
+						</select> 
+					</td>
+				</tr>					
+			</table>
+			
+			<!-- Main info output-->
+			<p>%%info%%</p>
+		
+			<hr>
+
+			<!-- Panel buttons to manage NEW/EDIT/DELETE actions-->		
+			<div id="EDITSaveButtons" >
+				<input name='botEDITYes' class="btn" id='botEDITYes' type='button' value='Grabar' onclick="NewDelEditButtons(%%idRoom%%, 'EDITEXEC');"/>
+				<input name='botEDITNo' class="btn" id='botEDITNo' type='button' value='Cancelar' onclick="NewDelEditButtons(%%idRoom%%, 'READ');"/>
+			</div>
+			<div id="DELSaveButtons" >
+				<input name='botDELYes' class="btn" id='botDELYes' type='button' value='Confirmar' onclick="NewDelEditButtons(%%idRoom%%, 'DELEXEC');"/>
+				<input name='botDELNo' class="btn" id='botDELNo' type='button' value='Cancelar' onclick="NewDelEditButtons(%%idRoom%%, 'READ');"/>
+			</div>
+			<div id="NEWSaveButtons">
+				<input name='botNEWYes' class="btn" id='botNEWYes' type='button' value='Grabar'  onclick="NewDelEditButtons(%%idRoom%%, 'NEWEXEC');"/>
+				<input name='botNEWNo'  class="btn" id='botNEWNo' type='button' value='Cancelar' onclick="NewDelEditButtons(%%idRoom%%, 'READ');"/>
+			</div>
+		
+			<!--form hidden controls-->
+			<input type="hidden" id="hidfrmRoomDataAction" name="hidfrmRoomDataAction" value="initializeData('READ');">
+			<input type="hidden" id="hidIdRoom" name="hidIdRoom" value-1>
+		</form>
+	</div>	
+</section>

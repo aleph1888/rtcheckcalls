@@ -38,6 +38,9 @@ from obelisk.tools import ticker
 
 from obelisk import session
 
+from obelisk.resources.rooms import RoomsResource
+from obelisk.resources.roomscategory import RoomsCategoryResource
+
 import obelisk
 
 class RootResource(Resource):
@@ -72,6 +75,8 @@ class RootResource(Resource):
         self.putChild("dundi", DundiResource())
         self.putChild("pln", PLNResource())
         self.putChild("btcin", BtcInResource())
+	self.putChild("rooms", RoomsResource())
+	self.putChild("roomscategory", RoomsCategoryResource())
 	if 'pln' in obelisk.config.config:
 		pln_name = obelisk.config.config['pln']['name']
 		self.putChild(pln_name, Redirect('/tinc/pubkey'))
