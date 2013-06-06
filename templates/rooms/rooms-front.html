@@ -26,8 +26,10 @@
 					<form id="frmTree" name="frmTree" method='POST'>
 			
 						<div id="divSearch">
-							<input style="margin-top:10px;" id="txtSearch" size="21" id="txtSearch" type="search" > 
-							<input class="btn" name='btSearch' type='button' value='Buscar' onclick="sendNewRoomCategory();"/>
+							<input style="margin-top:10px;" size="21" id="txtSearch" type="search" >
+							 
+							<input class="btn" id='btSearch' type='button' value='Buscar' onclick="sendSearchTree();"/>
+							<input class="btn" id='btSearchClear' type='button' value='X' onclick="sendSearchTreeClear();"/>
 
 														
 								<select style="width:40;" id="codCategoryFilterView" name="codCategoryFilterView" onchange="CategoryFilterSubmit(this);">

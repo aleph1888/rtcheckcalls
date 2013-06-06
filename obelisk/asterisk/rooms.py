@@ -235,7 +235,7 @@ def getROOMSofCATEGORYnode (nIdCategory, stUser, yConfStatus):
 			yReturn = yReturn +  '</li>'
 		yReturn = yReturn + '</ul>'  	
 	 
-	return yReturn
+	return yReturn>
 
 #CATEGORY TREE MANAGEMENT: gets <ul></ul> tree of categories
 def getROOMCATEGORIEStree(stUser):

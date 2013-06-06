@@ -38,11 +38,16 @@
 						}
 					    }
 					},
+					"search" : {
+						"case_insensitive" : true,
+						"show_only_matches" : true,
+						"search_method": "jstree_contains"
+					},
 					"ui" : {
 						"select_limit" : 1,
 						"initially_select" : ["#" + nInitiallySelected]						
 						},
-					"plugins" : ["themes","html_data","dnd","ui","types"]
+					"plugins" : ["themes","html_data","dnd","ui","types", "search"]
 					
 				    });
 	
@@ -178,7 +183,14 @@
 				}
 			}
 		}
-	}		
+	}
+			
+	function sendSearchTree() {
+		
+	 	$("#myjsTree").jstree("search", document.getElementById("txtSearch").value);
+	}
 	
-	
-	
+	function sendSearchTreeClear() {
+		
+	 	$("#myjsTree").jstree("clear_search");
+	}
